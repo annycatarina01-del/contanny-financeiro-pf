@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AppOption } from '../modules/cadastros/cadastros.types';
 import { CadastrosService } from '../modules/cadastros/cadastros.service';
+import { useAuth } from './AuthContext';
 
 interface OptionsContextData {
   options: AppOption[];
@@ -12,13 +13,19 @@ interface OptionsContextData {
 const OptionsContext = createContext<OptionsContextData>({} as OptionsContextData);
 
 export function OptionsProvider({ children }: { children: ReactNode }) {
+  const { organization } = useAuth();
   const [options, setOptions] = useState<AppOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshOptions = async () => {
+    if (!organization) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const data = await CadastrosService.getAll();
+      const data = await CadastrosService.getAll(organization.id);
       setOptions(data || []);
     } catch (error) {
       console.warn("Failed to fetch options (may be expected in development)", error);
@@ -30,7 +37,7 @@ export function OptionsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshOptions();
-  }, []);
+  }, [organization]);
 
   const getOptionsByType = (type: AppOption['type']) => {
     return options.filter(opt => opt.type === type);
