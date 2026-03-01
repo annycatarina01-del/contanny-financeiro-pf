@@ -63,11 +63,14 @@ export const ContasPagarService = {
         .select()
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error creating bill:", error);
+        throw error;
+      }
       return { id: created?.[0]?.id || Math.random().toString(36).substr(2, 9) };
     } catch (e) {
-      console.warn("Failed to create bill:", e);
-      return { id: Math.random().toString(36).substr(2, 9) };
+      console.error("Failed to create bill:", e);
+      throw e;
     }
   },
 
@@ -83,13 +86,18 @@ export const ContasPagarService = {
           payment_method: data.paymentMethod,
           card_provider: data.cardProvider,
           investment_id: data.investmentId,
+          secondary_description: data.secondaryDescription,
         })
         .eq("id", id)
         .eq("organization_id", orgId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error updating bill:", error);
+        throw error;
+      }
     } catch (e) {
-      console.warn("Failed to update bill:", e);
+      console.error("Failed to update bill:", e);
+      throw e;
     }
   },
 

@@ -68,6 +68,7 @@ export default function ContasPagarPage() {
       fetchBillsAndAccounts();
     } catch (error) {
       console.error(error);
+      alert("Erro ao salvar conta: " + (error as any).message);
     }
   };
 
@@ -79,6 +80,7 @@ export default function ContasPagarPage() {
       fetchBillsAndAccounts();
     } catch (error) {
       console.error(error);
+      alert("Erro ao atualizar conta: " + (error as any).message);
     }
   };
 
@@ -89,6 +91,7 @@ export default function ContasPagarPage() {
       fetchBillsAndAccounts();
     } catch (error) {
       console.error(error);
+      alert("Erro ao excluir conta: " + (error as any).message);
     }
   };
 
@@ -100,6 +103,7 @@ export default function ContasPagarPage() {
         fetchBillsAndAccounts();
       } catch (error) {
         console.error(error);
+        alert("Erro ao alterar status: " + (error as any).message);
       }
     } else {
       setIdsToPay([id]);

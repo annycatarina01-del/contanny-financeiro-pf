@@ -43,5 +43,6 @@ export interface CreateBillDTO {
   isRepeated?: boolean;
   months?: number;
   installments?: number;
+  paidInstallments?: number;
   sameDayDue?: boolean;
 }
