@@ -15,6 +15,9 @@ export interface BillPayable {
   investment_id?: string;
   payment_date?: string;
   created_at: string;
+  installment_number?: number;
+  total_installments?: number;
+  parent_id?: string;
 }
 
 export interface UpdateBillDTO {

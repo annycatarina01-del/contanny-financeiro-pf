@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabase";
 import { BillPayable, CreateBillDTO, BillStatus } from "./contas-pagar.types";
+import { addMonths, format } from "date-fns";
 
 export const ContasPagarService = {
   async getAll(orgId: string): Promise<BillPayable[]> {
@@ -24,25 +25,73 @@ export const ContasPagarService = {
 
   async create(orgId: string, data: CreateBillDTO): Promise<{ id: string }> {
     try {
-      const { data: entry, error } = await supabase
-        .from("financial_entries")
-        .insert({
+      const installments = data.installments || 1;
+      const baseAmount = data.amount / installments;
+      const startDate = new Date(data.dueDate);
+      let parentId: string | undefined;
+
+      // Create parent entry for tracking if it's an installment plan
+      if (installments > 1) {
+        const { data: parentEntry, error: parentError } = await supabase
+          .from("financial_entries")
+          .insert({
+            organization_id: orgId,
+            description: `${data.description} (Plano de Parcelamento)`,
+            amount: data.amount,
+            due_date: data.dueDate,
+            type: "payable",
+            status: "pending",
+            category: data.category,
+            payment_method: data.paymentMethod,
+            card_provider: data.cardProvider,
+            investment_id: data.investmentId,
+            is_parent: true,
+            total_installments: installments,
+          })
+          .select()
+          .single();
+
+        if (parentError) console.warn("Error creating parent entry:", parentError);
+        if (parentEntry) parentId = parentEntry.id;
+      }
+
+      // Create individual installments
+      const entries = [];
+      for (let i = 1; i <= installments; i++) {
+        const installmentDate = format(
+          addMonths(startDate, i - 1),
+          'yyyy-MM-dd'
+        );
+
+        const isPaid = i <= (data.paidInstallments || 0);
+
+        entries.push({
           organization_id: orgId,
           description: data.description,
-          amount: data.amount,
-          due_date: data.dueDate,
+          amount: baseAmount,
+          due_date: installmentDate,
           type: "payable",
-          status: "pending",
+          status: isPaid ? "paid" : "pending",
           category: data.category,
           payment_method: data.paymentMethod,
           card_provider: data.cardProvider,
           investment_id: data.investmentId,
-        })
+          installment_number: i,
+          total_installments: installments,
+          parent_id: parentId,
+          secondary_description: data.secondaryDescription,
+          payment_date: isPaid ? installmentDate : undefined,
+        } as any);
+      }
+
+      const { data: created, error } = await supabase
+        .from("financial_entries")
+        .insert(entries)
         .select()
-        .single();
+        .limit(1);
 
       if (error) throw error;
-      return { id: entry.id };
+      return { id: created?.[0]?.id || Math.random().toString(36).substr(2, 9) };
     } catch (e) {
       console.warn("Failed to create bill:", e);
       return { id: Math.random().toString(36).substr(2, 9) };

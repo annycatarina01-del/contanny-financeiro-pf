@@ -155,7 +155,14 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-zinc-900">{bill.description}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-zinc-900">{bill.description}</span>
+                          {bill.total_installments && bill.total_installments > 1 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                              {bill.installment_number}/{bill.total_installments}
+                            </span>
+                          )}
+                        </div>
                         {bill.secondary_description && (
                           <span className="text-xs text-zinc-500 mt-0.5">{bill.secondary_description}</span>
                         )}
