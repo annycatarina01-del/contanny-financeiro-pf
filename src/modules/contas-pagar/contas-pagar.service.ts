@@ -54,7 +54,7 @@ export const ContasPagarService = {
           total_installments: installments,
           secondary_description: data.secondaryDescription,
           payment_date: isPaid ? installmentDate : undefined,
-        } as any);
+        });
       }
 
       const { data: created, error } = await supabase

@@ -52,11 +52,11 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
 
   const getStatusInfo = (bill: BillPayable) => {
     if (bill.status === 'paid') return { label: 'Pago', color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: <CheckCircle size={14} /> };
-    
+
     const date = new Date(bill.due_date);
     if (isPast(date) && !isToday(date)) return { label: 'Atrasado', color: 'bg-rose-50 text-rose-600 border-rose-100', icon: <AlertCircle size={14} /> };
     if (isToday(date)) return { label: 'Vence Hoje', color: 'bg-amber-50 text-amber-600 border-amber-100', icon: <Clock size={14} /> };
-    
+
     return { label: 'Pendente', color: 'bg-zinc-100 text-zinc-600 border-zinc-200', icon: <Clock size={14} /> };
   };
 
@@ -86,14 +86,14 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
           >
             <span className="font-medium">{selectedIds.length} selecionados</span>
             <div className="h-4 w-px bg-zinc-700"></div>
-            <button 
+            <button
               onClick={handleBulkPayClick}
               className="flex items-center gap-2 hover:text-emerald-400 transition-colors font-bold"
             >
               <CheckCircle size={18} />
               Confirmar Pagamento
             </button>
-            <button 
+            <button
               onClick={() => setSelectedIds([])}
               className="ml-2 p-1 hover:bg-zinc-800 rounded-full"
             >
@@ -110,7 +110,7 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
             <thead>
               <tr className="border-bottom border-zinc-100 bg-zinc-50/50">
                 <th className="px-6 py-4 w-12">
-                  <button 
+                  <button
                     onClick={toggleSelectAll}
                     className="text-zinc-400 hover:text-zinc-600 transition-colors"
                   >
@@ -135,11 +135,11 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
               {bills.map((bill) => {
                 const status = getStatusInfo(bill);
                 const isSelected = selectedIds.includes(bill.id);
-                
+
                 return (
                   <tr key={bill.id} className={`hover:bg-zinc-50 transition-colors group ${isSelected ? 'bg-zinc-50' : ''}`}>
                     <td className="px-6 py-4">
-                      <button 
+                      <button
                         onClick={() => toggleSelect(bill.id)}
                         className="text-zinc-400 hover:text-zinc-600 transition-colors"
                       >
