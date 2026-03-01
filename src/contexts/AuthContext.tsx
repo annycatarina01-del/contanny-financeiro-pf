@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
-                refreshSession();
+                setTimeout(() => refreshSession(), 500);
             } else {
                 setUser(null);
                 setSession(null);
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
 
         return () => {
-            subscription.unsubscribe();
+            subscription?.unsubscribe();
         };
     }, []);
 

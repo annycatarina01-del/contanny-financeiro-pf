@@ -19,9 +19,10 @@ export function OptionsProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const data = await CadastrosService.getAll();
-      setOptions(data);
+      setOptions(data || []);
     } catch (error) {
-      console.error("Failed to fetch options", error);
+      console.warn("Failed to fetch options (may be expected in development)", error);
+      setOptions([]);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,12 @@ import { supabase } from "../../lib/supabase";
 import { AppOption, CreateOptionDTO, UpdateOptionDTO } from "./cadastros.types";
 
 export const CadastrosService = {
-  getAll: async (orgId: string): Promise<AppOption[]> => {
+  getAll: async (orgId?: string): Promise<AppOption[]> => {
+    if (!orgId) {
+      console.warn("CadastrosService.getAll called without orgId");
+      return [];
+    }
+    
     const { data, error } = await supabase
       .from("app_options")
       .select("*")
@@ -10,7 +15,10 @@ export const CadastrosService = {
       .order("type", { ascending: true })
       .order("label", { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching options:", error);
+      return [];
+    }
     return data as AppOption[];
   },
 

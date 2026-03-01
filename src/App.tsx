@@ -26,7 +26,7 @@ import { AccountService, Account } from "./services/accountService";
 const COLORS = ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export default function App() {
-  const { user, organization, signOut, loading: authLoading } = useAuth();
+  const { user, organization, signOut, loading: authLoading, refreshSession } = useAuth();
   const { getOptionsByType } = useOptions();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [bills, setBills] = useState<BillPayable[]>([]);
