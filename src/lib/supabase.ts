@@ -7,14 +7,23 @@ let supabase: any;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('⚠️ Supabase credentials not configured. Using mock client.');
-    // Create a mock supabase client that doesn't throw errors
+    
+    // Mock query builder
+    const mockQueryBuilder = {
+        select: () => mockQueryBuilder,
+        insert: () => mockQueryBuilder,
+        update: () => mockQueryBuilder,
+        delete: () => mockQueryBuilder,
+        eq: () => mockQueryBuilder,
+        order: () => mockQueryBuilder,
+        single: () => Promise.resolve({ data: null, error: null }),
+        then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb),
+    };
+
+    // Create a mock supabase client
     supabase = {
-        from: () => ({
-            select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null })) }),
-            insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-            update: () => ({ eq: () => Promise.resolve({ error: null }) }),
-            delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-        }),
+        from: () => mockQueryBuilder,
+        rpc: () => Promise.resolve({ data: null, error: null }),
         auth: {
             onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
             signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
