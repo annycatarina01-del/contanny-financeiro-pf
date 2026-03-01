@@ -47,7 +47,7 @@ export function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[95vh] flex flex-col">
         <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
           <h2 className="text-lg font-bold text-zinc-900">Nova Transação</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-200 rounded-full transition-colors">
@@ -55,7 +55,7 @@ export function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
           <div className="flex p-1 bg-zinc-100 rounded-xl">
             <button
               type="button"
@@ -139,7 +139,7 @@ export function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
                 Esta é uma {type === 'income' ? 'receita' : 'despesa'} fixa mensal
               </label>
             </div>
-            
+
             {isFixed && (
               <div className="space-y-1 mt-2 animate-in slide-in-from-top-2 duration-200">
                 <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Repetir por quantos meses?</label>

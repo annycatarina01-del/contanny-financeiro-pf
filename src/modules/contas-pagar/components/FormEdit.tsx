@@ -61,7 +61,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
         <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
           <h2 className="text-lg font-bold text-zinc-900">Editar Conta</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-200 rounded-full transition-colors">
@@ -69,7 +69,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Descrição Primária</label>
