@@ -28,32 +28,6 @@ export const ContasPagarService = {
       const installments = data.installments || 1;
       const baseAmount = data.amount / installments;
       const startDate = new Date(data.dueDate);
-      let parentId: string | undefined;
-
-      // Create parent entry for tracking if it's an installment plan
-      if (installments > 1) {
-        const { data: parentEntry, error: parentError } = await supabase
-          .from("financial_entries")
-          .insert({
-            organization_id: orgId,
-            description: `${data.description} (Plano de Parcelamento)`,
-            amount: data.amount,
-            due_date: data.dueDate,
-            type: "payable",
-            status: "pending",
-            category: data.category,
-            payment_method: data.paymentMethod,
-            card_provider: data.cardProvider,
-            investment_id: data.investmentId,
-            is_parent: true,
-            total_installments: installments,
-          })
-          .select()
-          .single();
-
-        if (parentError) console.warn("Error creating parent entry:", parentError);
-        if (parentEntry) parentId = parentEntry.id;
-      }
 
       // Create individual installments
       const entries = [];
@@ -78,7 +52,6 @@ export const ContasPagarService = {
           investment_id: data.investmentId,
           installment_number: i,
           total_installments: installments,
-          parent_id: parentId,
           secondary_description: data.secondaryDescription,
           payment_date: isPaid ? installmentDate : undefined,
         } as any);
