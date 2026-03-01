@@ -23,7 +23,7 @@ import { useAuth } from "./contexts/AuthContext";
 import { TransactionService } from "./services/transactionService";
 import { AccountService, Account } from "./services/accountService";
 
-const COLORS = ['#10b981', '#f43f5e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+const COLORS = ['#002d4b', '#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export default function App() {
   const { user, organization, signOut, loading: authLoading, refreshSession } = useAuth();
@@ -208,7 +208,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-50">
-        <div className="w-12 h-12 border-4 border-emerald-600/30 border-t-emerald-600 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand-navy/30 border-t-brand-navy rounded-full animate-spin" />
       </div>
     );
   }
@@ -225,28 +225,27 @@ export default function App() {
           <div className="flex flex-col items-center gap-4 text-zinc-900">
             {!logoError ? (
               <img
-                src="/api/image-proxy?url=https%3A%2F%2Fpicsum.photos%2Fseed%2Faccounting%2F200%2F200"
+                src="/logo.png"
                 alt="Cont. Anny Logo"
                 className="w-24 h-24 rounded-2xl shadow-md object-cover border-2 border-white"
-                referrerPolicy="no-referrer"
                 onError={(e) => {
-                  console.error("Logo failed to load via proxy, using icon fallback.");
+                  console.error("Logo failed to load, using icon fallback.");
                   setLogoError(true);
                 }}
               />
             ) : (
-              <div className="w-24 h-24 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-all duration-300">
+              <div className="w-24 h-24 bg-brand-navy rounded-2xl flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-all duration-300">
                 <Banknote size={48} />
               </div>
             )}
-            <span className="text-xl font-bold tracking-tight text-center">Cont. Anny</span>
+            <span className="text-xl font-bold tracking-tight text-center text-brand-navy">Cont. Anny</span>
           </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-2">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-brand-navy text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
           >
             <LayoutDashboard size={18} />
             Dashboard
@@ -319,7 +318,7 @@ export default function App() {
               </div>
               <button
                 onClick={() => setShowForm(true)}
-                className="flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-zinc-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                className="flex items-center justify-center gap-2 bg-brand-navy text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-navy/90 transition-all shadow-lg hover:shadow-xl active:scale-95"
               >
                 <Plus size={20} />
                 Nova Transação

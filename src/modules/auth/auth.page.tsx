@@ -55,8 +55,12 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
           className="bg-white p-8 rounded-3xl shadow-xl border border-zinc-100"
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300 mb-6">
-              <Banknote size={40} />
+            <div className="mb-6">
+              <img
+                src="/logo.png"
+                alt="Cont. Anny Logo"
+                className="w-24 h-24 rounded-2xl shadow-xl transform rotate-3 hover:rotate-0 transition-transform duration-300 object-cover"
+              />
             </div>
             <h1 className="text-2xl font-bold text-zinc-900">
               {isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}
@@ -89,7 +93,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Seu nome"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-zinc-50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-brand-navy outline-none bg-zinc-50 transition-all"
                       required={!isLogin}
                     />
                   </div>
@@ -108,7 +112,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu@email.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-zinc-50 transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-brand-navy outline-none bg-zinc-50 transition-all"
                   required
                 />
               </div>
@@ -125,7 +129,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-zinc-50 transition-all"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-brand-navy outline-none bg-zinc-50 transition-all"
                   required
                 />
               </div>
@@ -151,7 +155,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-emerald-500 outline-none bg-zinc-50 transition-all"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-brand-navy outline-none bg-zinc-50 transition-all"
                       required={!isLogin}
                     />
                   </div>
@@ -174,7 +178,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-3.5 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+              className="w-full flex items-center justify-center gap-2 bg-brand-navy text-white px-6 py-3.5 rounded-xl font-bold hover:bg-brand-navy/90 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -193,7 +197,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                 Ainda não tem uma conta?{' '}
                 <button
                   onClick={toggleMode}
-                  className="text-emerald-600 font-bold hover:text-emerald-700 underline underline-offset-4"
+                  className="text-brand-navy font-bold hover:text-brand-navy/80 underline underline-offset-4"
                 >
                   Cadastre-se
                 </button>
@@ -203,7 +207,7 @@ export default function AuthPage({ onLogin }: AuthPageProps) {
                 Já tem uma conta?{' '}
                 <button
                   onClick={toggleMode}
-                  className="text-emerald-600 font-bold hover:text-emerald-700 underline underline-offset-4"
+                  className="text-brand-navy font-bold hover:text-brand-navy/80 underline underline-offset-4"
                 >
                   Faça login
                 </button>

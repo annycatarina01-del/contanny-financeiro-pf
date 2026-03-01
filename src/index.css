@@ -4,6 +4,10 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-navy: #002d4b;
+  --color-brand-gold: #c5a059;
+  --color-brand-gold-dark: #a68444;
 }
 
 @layer base {
