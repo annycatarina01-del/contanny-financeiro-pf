@@ -24,46 +24,56 @@ export interface CreateTransactionDTO {
 
 export const TransactionService = {
     async getAll(orgId: string): Promise<Transaction[]> {
-        const { data, error } = await supabase
-            .from("financial_transactions")
-            .select("*")
-            .eq("organization_id", orgId)
-            .order("date", { ascending: false });
+        try {
+            const { data, error } = await supabase
+                .from("financial_transactions")
+                .select("*")
+                .eq("organization_id", orgId)
+                .order("date", { ascending: false });
 
-        if (error) throw error;
-        return data as Transaction[];
+            if (error) {
+                console.warn("Error fetching transactions:", error);
+                return [];
+            }
+            return data as Transaction[];
+        } catch (e) {
+            console.warn("Failed to fetch transactions:", e);
+            return [];
+        }
     },
 
     async create(orgId: string, data: CreateTransactionDTO): Promise<void> {
-        // We must ensure amount is negative for expenses if not already
-        const signedAmount = data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount);
+        try {
+            // We must ensure amount is negative for expenses if not already
+            const signedAmount = data.type === 'expense' ? -Math.abs(data.amount) : Math.abs(data.amount);
 
-        const { error } = await supabase.rpc('process_transaction', {
-            p_org_id: orgId,
-            p_account_id: data.accountId,
-            p_description: data.description,
-            p_amount: signedAmount,
-            p_type: data.type,
-            p_category: data.category,
-            p_date: data.date
-        });
+            const { error } = await supabase.rpc('process_transaction', {
+                p_org_id: orgId,
+                p_account_id: data.accountId,
+                p_description: data.description,
+                p_amount: signedAmount,
+                p_type: data.type,
+                p_category: data.category,
+                p_date: data.date
+            });
 
-        if (error) throw error;
+            if (error) console.warn("Error creating transaction:", error);
+        } catch (e) {
+            console.warn("Failed to create transaction:", e);
+        }
     },
 
     async delete(orgId: string, id: string): Promise<void> {
-        // Note: Deleting a transaction should ideally be an annulment/offset, 
-        // but the current system allows deletion. 
-        // For a simple migration, we'll allow it but warn that it breaks the balance history.
-        // Better: Implement a "revert_transaction" RPC.
+        try {
+            const { error } = await supabase
+                .from("financial_transactions")
+                .delete()
+                .eq("id", id)
+                .eq("organization_id", orgId);
 
-        // For now, let's just delete and let the user know.
-        const { error } = await supabase
-            .from("financial_transactions")
-            .delete()
-            .eq("id", id)
-            .eq("organization_id", orgId);
-
-        if (error) throw error;
+            if (error) console.warn("Error deleting transaction:", error);
+        } catch (e) {
+            console.warn("Failed to delete transaction:", e);
+        }
     }
 };
