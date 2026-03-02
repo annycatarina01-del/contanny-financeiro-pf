@@ -53,7 +53,13 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const fetchData = async () => {
-    if (!organization) return;
+    if (!organization) {
+      setTransactions([]);
+      setBills([]);
+      setReceivables([]);
+      setAccounts([]);
+      return;
+    }
 
     try {
       const [transactionsData, billsData, receivablesData, accountsData] = await Promise.all([
@@ -409,6 +415,15 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12">
+        {!organization && (
+          <div className="mb-8 p-6 bg-amber-50 border border-amber-100 rounded-3xl text-amber-800 flex items-center gap-4">
+            <AlertCircle className="text-amber-600 shrink-0" size={24} />
+            <div>
+              <p className="font-bold">Nenhuma organização selecionada</p>
+              <p className="text-sm">Você está autenticado, mas não possui uma organização vinculada. Entre em contato com o suporte ou crie uma nova organização.</p>
+            </div>
+          </div>
+        )}
         {activeTab === 'dashboard' ? (
           <div className="space-y-8">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">

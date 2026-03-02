@@ -39,7 +39,10 @@ export default function ContasPagarPage() {
   const [fundingSourceFilter, setFundingSourceFilter] = useState<'all' | 'balance' | 'investment'>('all');
 
   const fetchBillsAndAccounts = async () => {
-    if (!organization) return;
+    if (!organization) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [billsData, accountsData] = await Promise.all([

@@ -37,7 +37,10 @@ export default function ContasReceberPage() {
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | PaymentMethod>('all');
 
   const fetchBillsAndAccounts = async () => {
-    if (!organization) return;
+    if (!organization) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const [billsData, accountsData] = await Promise.all([

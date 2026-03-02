@@ -25,17 +25,19 @@ export const AuthService = {
         if (error) throw error;
 
         // Fetch the user's organization
-        const { data: memberData, error: memberError } = await supabase
+        const { data: members, error: memberError } = await supabase
             .from('organization_members')
             .select('organization_id, organizations(id, name)')
             .eq('user_id', data.user.id)
-            .single();
+            .limit(1);
 
-        if (memberError && memberError.code !== 'PGRST116') throw memberError;
+        if (memberError) throw memberError;
+
+        const firstMember = members?.[0];
 
         return {
             user: data.user,
-            organization: memberData?.organizations
+            organization: (firstMember as any)?.organizations
         };
     },
 
@@ -49,16 +51,22 @@ export const AuthService = {
         if (error) throw error;
         if (!session) return null;
 
-        const { data: memberData } = await supabase
+        const { data: members, error: memberError } = await supabase
             .from('organization_members')
             .select('organization_id, organizations(id, name)')
             .eq('user_id', session.user.id)
-            .single();
+            .limit(1);
+
+        if (memberError) {
+            console.error('Error fetching organization membership:', memberError);
+        }
+
+        const firstMember = members?.[0];
 
         return {
             session,
             user: session.user,
-            organization: memberData?.organizations
+            organization: (firstMember as any)?.organizations
         };
     }
 };
