@@ -54,6 +54,11 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-zinc-900">{t.description}</span>
+                    {t.installment_number && t.total_installments && t.total_installments > 1 && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+                        {t.installment_number}/{t.total_installments}
+                      </span>
+                    )}
                     {t.status === 'pending' && (
                       <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[10px] font-bold uppercase border border-amber-100">
                         Pendente

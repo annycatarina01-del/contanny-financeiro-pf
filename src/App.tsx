@@ -140,7 +140,9 @@ export default function App() {
     // 1. All actual transactions from the DB (Realized)
     ...transactions.map(t => ({
       ...t,
-      status: t.type === 'income' ? 'received' : 'paid'
+      status: t.type === 'income' ? 'received' : 'paid',
+      installment_number: t.installment_number,
+      total_installments: t.total_installments
     })),
     // 2. Only PENDING bills (Projected Expense)
     ...bills
@@ -156,7 +158,9 @@ export default function App() {
         paymentMethod: bill.payment_method,
         cardProvider: bill.card_provider,
         investmentId: bill.investment_id,
-        status: 'pending' as const
+        status: 'pending' as const,
+        installment_number: bill.installment_number,
+        total_installments: bill.total_installments
       })),
     // 3. Only PENDING receivables (Projected Income)
     ...receivables
@@ -169,7 +173,9 @@ export default function App() {
         category: rec.category,
         date: rec.due_date,
         isFixed: false,
-        status: 'pending' as const
+        status: 'pending' as const,
+        installment_number: rec.installment_number,
+        total_installments: rec.total_installments
       }))
   ];
 

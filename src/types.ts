@@ -12,6 +12,8 @@ export interface Transaction {
   cardProvider?: string;
   investmentId?: string;
   status?: 'pending' | 'paid' | 'received';
+  installment_number?: number;
+  total_installments?: number;
 }
 
 export interface Summary {

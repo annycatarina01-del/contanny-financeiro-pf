@@ -12,6 +12,8 @@ export interface BillReceivable {
   payment_method: PaymentMethod;
   payment_date?: string;
   created_at: string;
+  installment_number?: number;
+  total_installments?: number;
 }
 
 export interface UpdateReceivableDTO {

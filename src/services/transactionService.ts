@@ -11,6 +11,8 @@ export interface Transaction {
     category: string;
     date: string;
     created_at: string;
+    installment_number?: number;
+    total_installments?: number;
 }
 
 export interface CreateTransactionDTO {
@@ -27,7 +29,13 @@ export const TransactionService = {
         try {
             const { data, error } = await supabase
                 .from("financial_transactions")
-                .select("*")
+                .select(`
+                    *,
+                    financial_entries (
+                        installment_number,
+                        total_installments
+                    )
+                `)
                 .eq("organization_id", orgId)
                 .order("date", { ascending: false });
 
@@ -35,7 +43,15 @@ export const TransactionService = {
                 console.warn("Error fetching transactions:", error);
                 return [];
             }
-            return data as Transaction[];
+
+            // Flatten the related entry data
+            const transactions = (data as any[]).map(t => ({
+                ...t,
+                installment_number: t.financial_entries?.installment_number,
+                total_installments: t.financial_entries?.total_installments
+            }));
+
+            return transactions as Transaction[];
         } catch (e) {
             console.warn("Failed to fetch transactions:", e);
             return [];

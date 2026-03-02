@@ -59,7 +59,14 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
                   {format(new Date(bill.due_date), "dd MMM, yyyy", { locale: ptBR })}
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm font-medium text-zinc-900">{bill.description}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-900">{bill.description}</span>
+                    {bill.installment_number && bill.total_installments && bill.total_installments > 1 && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                        {bill.installment_number}/{bill.total_installments}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800">
@@ -79,8 +86,8 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
                   <button
                     onClick={() => onToggleStatus(bill.id, bill.status)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${bill.status === 'received'
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                      ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                      : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                       }`}
                   >
                     {bill.status === 'received' ? (

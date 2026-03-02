@@ -28,16 +28,17 @@ export const ContasPagarService = {
       const installments = data.installments || 1;
       const baseAmount = parseFloat((data.amount / installments).toFixed(2));
       // Use local date parsing to avoid timezone shifts (YYYY-MM-DD)
-      const [year, month, day] = data.dueDate.split('-').map(Number);
-      const startDate = new Date(year, month - 1, day);
-
       // Create individual installments
       const entries = [];
+      const [year, month, day] = data.dueDate.split('-').map(Number);
+
       for (let i = 1; i <= installments; i++) {
-        const installmentDate = format(
-          addMonths(startDate, i - 1),
-          'yyyy-MM-dd'
-        );
+        // Create base date for each month to avoid cumulative shifts
+        let installmentDateObj = addMonths(new Date(year, month - 1, day), i - 1);
+
+        // Ensure the day matches the original as much as possible 
+        // (date-fns addMonths handles the 31st vs 30th/28th correctly)
+        const installmentDate = format(installmentDateObj, 'yyyy-MM-dd');
 
         const isPaid = i <= (data.paidInstallments || 0);
 
