@@ -84,7 +84,15 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
   // All receivables for the month (pending and received)
   const allMonthReceivables = receivables.filter(r => r.due_date.startsWith(monthStr));
 
-  const totalIncome = allMonthReceivables.reduce((acc, r) => acc + r.amount, 0);
+  // All actual income transactions for the month (Realized)
+  const monthIncomeTransactions = monthTransactions.filter(t => t.type === 'income');
+  const realizedIncome = monthIncomeTransactions.reduce((acc, t) => acc + t.amount, 0);
+
+  // All pending receivables for the month (To Receive)
+  const pendingReceivables = allMonthReceivables.filter(r => r.status === 'pending');
+  const pendingIncome = pendingReceivables.reduce((acc, r) => acc + r.amount, 0);
+
+  const totalIncome = realizedIncome + pendingIncome;
 
   const essentialCategories = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação'];
   const leisureCategories = ['Lazer', 'Outros'];
@@ -151,6 +159,7 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
             essentialSpent={essentialSpent}
             leisureSpent={leisureSpent}
             investmentSpent={investmentSpent}
+            onDelete={fetchGoal}
           />
         </div>
       )}

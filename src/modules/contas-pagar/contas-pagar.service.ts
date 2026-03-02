@@ -117,11 +117,10 @@ export const ContasPagarService = {
         });
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from("financial_entries")
-          .update({ status: 'pending', payment_date: null })
-          .eq("id", id)
-          .eq("organization_id", orgId);
+        const { error } = await supabase.rpc('undo_entry_payment', {
+          p_org_id: orgId,
+          p_entry_id: id
+        });
         if (error) throw error;
       }
     } catch (e) {

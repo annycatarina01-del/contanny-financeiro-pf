@@ -1,5 +1,8 @@
 import { MonthlyGoal } from "../metas.types";
-import { CheckCircle2, XCircle, Pencil, Target } from "lucide-react";
+import { CheckCircle2, XCircle, Pencil, Target, Trash2 } from "lucide-react";
+import { MetasService } from "../metas.service";
+import { useAuth } from "../../auth/hooks/useAuth";
+import { toast } from "react-hot-toast";
 
 interface GoalCardProps {
   goal: MonthlyGoal | null;
@@ -10,9 +13,12 @@ interface GoalCardProps {
   essentialSpent: number;
   leisureSpent: number;
   investmentSpent: number;
+  onDelete: () => void;
 }
 
-export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpent, leisureSpent, investmentSpent }: GoalCardProps) {
+export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpent, leisureSpent, investmentSpent, onDelete }: GoalCardProps) {
+  const { organization } = useAuth();
+
   if (!goal) {
     return (
       <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm text-center flex flex-col items-center justify-center gap-4 min-h-[300px]">
@@ -43,6 +49,21 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
   const leisureProgress = leisureTarget > 0 ? Math.min(100, (leisureSpent / leisureTarget) * 100) : 0;
   const investmentProgress = investmentTarget > 0 ? Math.min(100, (investmentSpent / investmentTarget) * 100) : 0;
 
+  const handleDelete = async () => {
+    if (!goal || !organization) return;
+
+    if (window.confirm("Tem certeza que deseja excluir esta meta? Esta ação não pode ser desfeita.")) {
+      try {
+        await MetasService.delete(organization.id, goal.id);
+        toast.success("Meta excluída com sucesso!");
+        onDelete();
+      } catch (error) {
+        console.error("Erro ao excluir meta:", error);
+        toast.error("Erro ao excluir a meta.");
+      }
+    }
+  };
+
   return (
     <div className="bg-white p-6 md:p-8 rounded-3xl border border-zinc-200 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -68,6 +89,13 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
             className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl font-medium hover:bg-zinc-800 transition-colors shadow-md"
           >
             Avaliar Mês
+          </button>
+          <button
+            onClick={handleDelete}
+            className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+            title="Excluir Meta"
+          >
+            <Trash2 size={20} />
           </button>
         </div>
       </div>
@@ -107,7 +135,7 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full rounded-full ${essentialSpent > essentialTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
                 style={{ width: `${essentialProgress}%` }}
               />
@@ -132,7 +160,7 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full rounded-full ${leisureSpent > leisureTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
                 style={{ width: `${leisureProgress}%` }}
               />
@@ -157,7 +185,7 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className={`h-full rounded-full ${investmentSpent < investmentTarget ? 'bg-amber-500' : 'bg-emerald-500'}`}
                 style={{ width: `${investmentProgress}%` }}
               />

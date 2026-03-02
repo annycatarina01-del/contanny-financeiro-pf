@@ -58,5 +58,15 @@ export const MetasService = {
       .eq("organization_id", orgId);
 
     if (error) throw error;
+  },
+
+  async delete(orgId: string, id: string): Promise<void> {
+    const { error } = await supabase
+      .from("monthly_goals")
+      .delete()
+      .eq("id", id)
+      .eq("organization_id", orgId);
+
+    if (error) throw error;
   }
 };

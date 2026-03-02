@@ -43,7 +43,7 @@ export function List({ investments, onDelete, onEdit, onRedeem }: ListProps) {
             {investments.map((inv) => {
               const profit = inv.current_value - inv.amount_invested;
               const profitPercent = inv.amount_invested > 0 ? (profit / inv.amount_invested) * 100 : 0;
-              
+
               return (
                 <tr key={inv.id} className="hover:bg-zinc-50 transition-colors group">
                   <td className="px-6 py-4">
@@ -64,7 +64,7 @@ export function List({ investments, onDelete, onEdit, onRedeem }: ListProps) {
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.current_value)}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-right text-amber-600">
-                    {inv.total_linked_payable && inv.total_linked_payable > 0 
+                    {inv.total_linked_payable && inv.total_linked_payable > 0
                       ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.total_linked_payable)
                       : '-'}
                   </td>
@@ -75,7 +75,7 @@ export function List({ investments, onDelete, onEdit, onRedeem }: ListProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2 transition-opacity">
                       <button
                         onClick={() => onRedeem(inv)}
                         className="p-2 text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
