@@ -13,31 +13,6 @@ export const AuthService = {
         });
 
         if (authError) throw authError;
-
-        if (authData.user) {
-            // Create a default organization for the new user
-            const { data: org, error: orgError } = await supabase
-                .from('organizations')
-                .insert({ name: `Organização de ${name}` })
-                .select()
-                .single();
-
-            if (orgError) throw orgError;
-
-            // Add user as admin of the organization
-            const { error: memberError } = await supabase
-                .from('organization_members')
-                .insert({
-                    organization_id: org.id,
-                    user_id: authData.user.id,
-                    role: 'admin',
-                });
-
-            if (memberError) throw memberError;
-
-            return { user: authData.user, organization: org };
-        }
-
         return { user: authData.user };
     },
 
