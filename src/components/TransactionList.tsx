@@ -52,12 +52,19 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
                   {t.type === 'income' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-zinc-900">{t.description}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-900">{t.description}</span>
+                    {t.status === 'pending' && (
+                      <span className="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[10px] font-bold uppercase border border-amber-100">
+                        Pendente
+                      </span>
+                    )}
+                  </div>
                   {t.paymentMethod && (
                     <span className="text-xs text-zinc-400">
-                      {t.paymentMethod === 'credit_card' ? 'Cartão de Crédito' : 
-                       t.paymentMethod === 'boleto' ? 'Boleto' : 
-                       t.paymentMethod === 'installments' ? 'A Prazo' : t.paymentMethod}
+                      {t.paymentMethod === 'credit_card' ? 'Cartão de Crédito' :
+                        t.paymentMethod === 'boleto' ? 'Boleto' :
+                          t.paymentMethod === 'installments' ? 'A Prazo' : t.paymentMethod}
                       {t.cardProvider && ` - ${t.cardProvider}`}
                     </span>
                   )}
@@ -109,7 +116,7 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
     if (groupBy === 'category') key = t.category;
     else if (groupBy === 'paymentMethod') key = t.paymentMethod || 'Outros';
     else if (groupBy === 'cardProvider') key = t.cardProvider || (t.paymentMethod === 'credit_card' ? 'Não informado' : 'N/A');
-    
+
     // Translate payment methods for display
     if (groupBy === 'paymentMethod') {
       if (key === 'credit_card') key = 'Cartão de Crédito';
@@ -133,7 +140,7 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
 
         return (
           <div key={group} className="bg-white rounded-2xl border border-zinc-200 overflow-hidden">
-            <button 
+            <button
               onClick={() => toggleGroup(group)}
               className="w-full px-6 py-4 flex items-center justify-between bg-zinc-50 hover:bg-zinc-100 transition-colors"
             >
@@ -146,7 +153,7 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}
               </span>
             </button>
-            
+
             {isExpanded && (
               <div className="border-t border-zinc-100">
                 <div className="overflow-x-auto">

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Transaction } from "./types";
+import { Transaction, Summary } from "./types";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { TransactionList } from "./components/TransactionList";
 import { TransactionForm } from "./components/TransactionForm";
@@ -122,25 +122,36 @@ export default function App() {
     setLoadingInsights(false);
   };
 
-  // Combine transactions with paid bills and received receivables
+  // Combine transactions with bills and receivables
+  // We MUST AVOID double-counting: 
+  // - Transaction table contains the ACTUAL money movement (Reality).
+  // - Entries (Bills/Receivables) contain the PROMISE (Pending or Paid).
+
   const combinedTransactions: Transaction[] = [
-    ...transactions,
+    // 1. All actual transactions from the DB (Realized)
+    ...transactions.map(t => ({
+      ...t,
+      status: t.type === 'income' ? 'received' : 'paid'
+    })),
+    // 2. Only PENDING bills (Projected Expense)
     ...bills
-      .filter(bill => bill.status === 'paid')
+      .filter(bill => bill.status === 'pending')
       .map(bill => ({
         id: bill.id,
         description: bill.description,
         amount: bill.amount,
         type: 'expense' as const,
         category: bill.category,
-        date: bill.payment_date || bill.due_date,
+        date: bill.due_date,
         isFixed: false,
         paymentMethod: bill.payment_method,
         cardProvider: bill.card_provider,
-        investmentId: bill.investment_id
+        investmentId: bill.investment_id,
+        status: 'pending' as const
       })),
+    // 3. Only PENDING receivables (Projected Income)
     ...receivables
-      .filter(rec => rec.status === 'received')
+      .filter(rec => rec.status === 'pending')
       .map(rec => ({
         id: rec.id,
         description: rec.description,
@@ -148,7 +159,8 @@ export default function App() {
         type: 'income' as const,
         category: rec.category,
         date: rec.due_date,
-        isFixed: false
+        isFixed: false,
+        status: 'pending' as const
       }))
   ];
 
@@ -182,15 +194,28 @@ export default function App() {
   });
 
   const summary: Summary = filteredTransactions.reduce((acc, t) => {
+    const isPending = t.status === 'pending';
+
     if (t.type === 'income') {
-      acc.income += t.amount;
-      acc.balance += t.amount;
+      acc.projectedIncome += t.amount;
+      if (!isPending) acc.realizedIncome += t.amount;
     } else {
-      acc.expenses += t.amount;
-      acc.balance -= t.amount;
+      acc.projectedExpenses += t.amount;
+      if (!isPending) acc.realizedExpenses += t.amount;
     }
+
+    acc.realizedBalance = acc.realizedIncome - acc.realizedExpenses;
+    acc.projectedBalance = acc.projectedIncome - acc.projectedExpenses;
+
     return acc;
-  }, { balance: 0, income: 0, expenses: 0 });
+  }, {
+    realizedBalance: 0,
+    realizedIncome: 0,
+    realizedExpenses: 0,
+    projectedBalance: 0,
+    projectedIncome: 0,
+    projectedExpenses: 0
+  });
 
   const chartData = Object.entries(
     filteredTransactions
@@ -299,9 +324,9 @@ export default function App() {
 
         <div className="p-4 mt-auto">
           <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200">
-            <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Seu Saldo</p>
-            <p className={`text-2xl font-bold ${summary.balance >= 0 ? 'text-zinc-900' : 'text-rose-600'}`}>
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.balance)}
+            <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Saldo Realizado</p>
+            <p className={`text-2xl font-bold ${summary.realizedBalance >= 0 ? 'text-zinc-900' : 'text-rose-600'}`}>
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedBalance)}
             </p>
           </div>
         </div>
@@ -410,9 +435,14 @@ export default function App() {
                   </div>
                   <span className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Receitas</span>
                 </div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.income)}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-emerald-600">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedIncome)}
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Previsto: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.projectedIncome)}
+                  </p>
+                </div>
               </motion.div>
 
               <motion.div
@@ -428,9 +458,14 @@ export default function App() {
                   </div>
                   <span className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">Despesas</span>
                 </div>
-                <p className="text-3xl font-bold text-rose-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.expenses)}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold text-rose-600">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedExpenses)}
+                  </p>
+                  <p className="text-xs text-zinc-400">
+                    Previsto: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.projectedExpenses)}
+                  </p>
+                </div>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-zinc-900 p-6 rounded-3xl shadow-xl text-white">
@@ -438,11 +473,16 @@ export default function App() {
                   <div className="p-2 bg-white/10 text-white rounded-xl">
                     <Wallet size={24} />
                   </div>
-                  <span className="text-sm font-semibold text-white/60 uppercase tracking-wider">Saldo Total</span>
+                  <span className="text-sm font-semibold text-white/60 uppercase tracking-wider">Saldo Realizado</span>
                 </div>
-                <p className="text-3xl font-bold">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.balance)}
-                </p>
+                <div className="space-y-1">
+                  <p className="text-3xl font-bold">
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedBalance)}
+                  </p>
+                  <p className="text-xs text-white/40">
+                    Projeção: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.projectedBalance)}
+                  </p>
+                </div>
               </motion.div>
             </div>
 

@@ -11,10 +11,14 @@ export interface Transaction {
   paymentMethod?: string;
   cardProvider?: string;
   investmentId?: string;
+  status?: 'pending' | 'paid' | 'received';
 }
 
 export interface Summary {
-  balance: number;
-  income: number;
-  expenses: number;
+  realizedBalance: number;
+  realizedIncome: number;
+  realizedExpenses: number;
+  projectedBalance: number;
+  projectedIncome: number;
+  projectedExpenses: number;
 }
