@@ -26,8 +26,10 @@ export const ContasPagarService = {
   async create(orgId: string, data: CreateBillDTO): Promise<{ id: string }> {
     try {
       const installments = data.installments || 1;
-      const baseAmount = data.amount / installments;
-      const startDate = new Date(data.dueDate);
+      const baseAmount = parseFloat((data.amount / installments).toFixed(2));
+      // Use local date parsing to avoid timezone shifts (YYYY-MM-DD)
+      const [year, month, day] = data.dueDate.split('-').map(Number);
+      const startDate = new Date(year, month - 1, day);
 
       // Create individual installments
       const entries = [];

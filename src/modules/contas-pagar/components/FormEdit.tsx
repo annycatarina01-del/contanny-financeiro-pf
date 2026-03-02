@@ -4,6 +4,7 @@ import { InvestimentosService } from "../../investimentos/investimentos.service"
 import { Investment } from "../../investimentos/investimentos.types";
 import { X } from "lucide-react";
 import { useOptions } from "../../../contexts/OptionsContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface FormEditProps {
   bill: BillPayable;
@@ -12,6 +13,7 @@ interface FormEditProps {
 }
 
 export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
+  const { organization } = useAuth();
   const { getOptionsByType } = useOptions();
   const expenseCategories = getOptionsByType('expense_category');
   const paymentMethods = getOptionsByType('payment_method');
@@ -32,9 +34,11 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
   );
 
   useEffect(() => {
-    InvestimentosService.getAll().then(setInvestments).catch(console.error);
+    if (organization) {
+      InvestimentosService.getAll(organization.id).then(setInvestments).catch(console.error);
+    }
     if (creditCards.length > 0 && !cardProvider) setCardProvider(creditCards[0].value);
-  }, [creditCards]);
+  }, [organization, creditCards]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

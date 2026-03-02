@@ -4,6 +4,7 @@ import { InvestimentosService } from "../../investimentos/investimentos.service"
 import { Investment } from "../../investimentos/investimentos.types";
 import { X } from "lucide-react";
 import { useOptions } from "../../../contexts/OptionsContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface FormAddProps {
   onAdd: (data: any) => void;
@@ -11,6 +12,7 @@ interface FormAddProps {
 }
 
 export function FormAdd({ onAdd, onClose }: FormAddProps) {
+  const { organization } = useAuth();
   const { getOptionsByType } = useOptions();
   const expenseCategories = getOptionsByType('expense_category');
   const paymentMethods = getOptionsByType('payment_method');
@@ -35,12 +37,14 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
   const [fundingSource, setFundingSource] = useState('balance');
 
   useEffect(() => {
-    InvestimentosService.getAll().then(setInvestments).catch(console.error);
+    if (organization) {
+      InvestimentosService.getAll(organization.id).then(setInvestments).catch(console.error);
+    }
     if (expenseCategories.length > 0 && !category) setCategory(expenseCategories[0].value);
     if (paymentMethods.length > 0 && paymentMethod === 'boleto') setPaymentMethod(paymentMethods.find(p => p.value === 'boleto')?.value || paymentMethods[0].value);
     if (creditCards.length > 0 && !cardProvider) setCardProvider(creditCards[0].value);
     if (fundingSources.length > 0 && fundingSource === 'balance') setFundingSource(fundingSources.find(f => f.value === 'balance')?.value || fundingSources[0].value);
-  }, [expenseCategories, paymentMethods, creditCards, fundingSources]);
+  }, [organization, expenseCategories, paymentMethods, creditCards, fundingSources]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +111,7 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Valor</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Valor Total</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-medium">R$</span>
                 <input
@@ -120,9 +124,10 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none"
                 />
               </div>
+              <p className="text-[10px] text-zinc-400 ml-1">Para contas parceladas, este valor será dividido.</p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Vencimento</label>
+              <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Vencimento (1ª Parcela)</label>
               <input
                 type="date"
                 required
