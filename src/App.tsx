@@ -4,7 +4,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { TransactionList } from "./components/TransactionList";
 import { TransactionForm } from "./components/TransactionForm";
 import { getFinancialInsights } from "./services/geminiService";
-import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut } from "lucide-react";
+import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut, Menu } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
@@ -39,6 +39,7 @@ export default function App() {
   const [detailsModal, setDetailsModal] = useState<'income' | 'expense' | null>(null);
   const [groupBy, setGroupBy] = useState<'category' | 'paymentMethod' | 'cardProvider' | 'none'>('none');
   const [logoError, setLogoError] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Filters
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
@@ -242,94 +243,149 @@ export default function App() {
     return <AuthPage onLogin={refreshSession} />;
   }
 
+  const NavContent = () => (
+    <>
+      <div className="p-8">
+        <div className="flex flex-col items-center gap-4 text-zinc-900">
+          {!logoError ? (
+            <img
+              src="/logo.png"
+              alt="Cont. Anny Logo"
+              className="w-24 h-24 rounded-2xl shadow-md object-cover border-2 border-white"
+              onError={(e) => {
+                console.error("Logo failed to load, using icon fallback.");
+                setLogoError(true);
+              }}
+            />
+          ) : (
+            <div className="w-24 h-24 bg-brand-navy rounded-2xl flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-all duration-300">
+              <Banknote size={48} />
+            </div>
+          )}
+          <span className="text-xl font-bold tracking-tight text-center text-brand-navy">Cont. Anny</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-4 space-y-2">
+        <button
+          onClick={() => { setActiveTab('dashboard'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-brand-navy text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <LayoutDashboard size={18} />
+          Dashboard
+        </button>
+        <button
+          onClick={() => { setActiveTab('contas-pagar'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'contas-pagar' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <CreditCard size={18} />
+          Contas a Pagar
+        </button>
+        <button
+          onClick={() => { setActiveTab('contas-receber'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'contas-receber' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <Banknote size={18} />
+          Contas a Receber
+        </button>
+        <button
+          onClick={() => { setActiveTab('investimentos'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'investimentos' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <TrendingUp size={18} />
+          Investimentos
+        </button>
+        <button
+          onClick={() => { setActiveTab('metas'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'metas' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <Target size={18} />
+          Metas
+        </button>
+        <button
+          onClick={() => { setActiveTab('cadastros'); setIsMobileMenuOpen(false); }}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'cadastros' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
+        >
+          <Settings size={18} />
+          Cadastros
+        </button>
+
+        <div className="pt-4 mt-4 border-t border-zinc-100">
+          <button
+            onClick={() => signOut()}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-all"
+          >
+            <LogOut size={18} />
+            Sair
+          </button>
+        </div>
+      </nav>
+
+      <div className="p-4 mt-auto">
+        <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200">
+          <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Saldo Realizado</p>
+          <p className={`text-2xl font-bold ${summary.realizedBalance >= 0 ? 'text-zinc-900' : 'text-rose-600'}`}>
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedBalance)}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen flex bg-zinc-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col hidden md:flex">
-        <div className="p-8">
-          <div className="flex flex-col items-center gap-4 text-zinc-900">
-            {!logoError ? (
-              <img
-                src="/logo.png"
-                alt="Cont. Anny Logo"
-                className="w-24 h-24 rounded-2xl shadow-md object-cover border-2 border-white"
-                onError={(e) => {
-                  console.error("Logo failed to load, using icon fallback.");
-                  setLogoError(true);
-                }}
-              />
-            ) : (
-              <div className="w-24 h-24 bg-brand-navy rounded-2xl flex items-center justify-center text-white shadow-lg transform hover:scale-105 transition-all duration-300">
-                <Banknote size={48} />
-              </div>
-            )}
-            <span className="text-xl font-bold tracking-tight text-center text-brand-navy">Cont. Anny</span>
-          </div>
+    <div className="min-h-screen flex flex-col md:flex-row bg-zinc-50">
+      {/* Mobile Header */}
+      <header className="md:hidden bg-white border-b border-zinc-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center gap-2">
+          {!logoError ? (
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+          ) : (
+            <div className="w-8 h-8 bg-brand-navy rounded-lg flex items-center justify-center text-white">
+              <Banknote size={16} />
+            </div>
+          )}
+          <span className="font-bold text-brand-navy">Cont. Anny</span>
         </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-2 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-600"
+        >
+          <Menu size={24} />
+        </button>
+      </header>
 
-        <nav className="flex-1 px-4 space-y-2">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-brand-navy text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <LayoutDashboard size={18} />
-            Dashboard
-          </button>
-          <button
-            onClick={() => setActiveTab('contas-pagar')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'contas-pagar' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <CreditCard size={18} />
-            Contas a Pagar
-          </button>
-          <button
-            onClick={() => setActiveTab('contas-receber')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'contas-receber' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <Banknote size={18} />
-            Contas a Receber
-          </button>
-          <button
-            onClick={() => setActiveTab('investimentos')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'investimentos' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <TrendingUp size={18} />
-            Investimentos
-          </button>
-          <button
-            onClick={() => setActiveTab('metas')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'metas' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <Target size={18} />
-            Metas
-          </button>
-          <button
-            onClick={() => setActiveTab('cadastros')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === 'cadastros' ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-100'}`}
-          >
-            <Settings size={18} />
-            Cadastros
-          </button>
-
-          <div className="pt-4 mt-4 border-t border-zinc-100">
-            <button
-              onClick={() => signOut()}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-all"
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 md:hidden"
+            />
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-72 bg-white z-50 md:hidden flex flex-col shadow-2xl"
             >
-              <LogOut size={18} />
-              Sair
-            </button>
-          </div>
-        </nav>
+              <div className="absolute top-4 right-4">
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <NavContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
-        <div className="p-4 mt-auto">
-          <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-200">
-            <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Saldo Realizado</p>
-            <p className={`text-2xl font-bold ${summary.realizedBalance >= 0 ? 'text-zinc-900' : 'text-rose-600'}`}>
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(summary.realizedBalance)}
-            </p>
-          </div>
-        </div>
+      {/* Desktop Sidebar */}
+      <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col hidden md:flex sticky top-0 h-screen">
+        <NavContent />
       </aside>
 
       {/* Main Content */}
