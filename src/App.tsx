@@ -313,7 +313,7 @@ export default function App() {
 
           <div className="pt-4 mt-4 border-t border-zinc-100">
             <button
-              onClick={() => setIsAuthenticated(false)}
+              onClick={() => signOut()}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-rose-600 hover:bg-rose-50 transition-all"
             >
               <LogOut size={18} />
