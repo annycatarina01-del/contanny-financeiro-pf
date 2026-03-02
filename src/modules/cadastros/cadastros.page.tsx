@@ -117,6 +117,25 @@ export default function CadastrosPage() {
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
         </div>
+      ) : options.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border-2 border-dashed border-zinc-100">
+          <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+            <Sparkles size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-zinc-900 mb-2">Configure seu aplicativo</h2>
+          <p className="text-zinc-500 max-w-md mb-8">
+            Parece que você ainda não configurou as categorias e métodos de pagamento para esta organização.
+            Clique no botão abaixo para carregar as opções sugeridas.
+          </p>
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            <Sparkles size={20} />
+            {seeding ? "Carregando..." : "Começar agora (Carregar Padrões)"}
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <OptionList

@@ -5,6 +5,8 @@ import { Investment } from "../../investimentos/investimentos.types";
 import { X } from "lucide-react";
 import { useOptions } from "../../../contexts/OptionsContext";
 import { useAuth } from "../../../contexts/AuthContext";
+import { SeedService } from "../../../services/seedService";
+import { Sparkles } from "lucide-react";
 
 interface FormAddProps {
   onAdd: (data: any) => void;
@@ -13,11 +15,13 @@ interface FormAddProps {
 
 export function FormAdd({ onAdd, onClose }: FormAddProps) {
   const { organization } = useAuth();
-  const { getOptionsByType } = useOptions();
+  const { getOptionsByType, refreshOptions } = useOptions();
   const expenseCategories = getOptionsByType('expense_category');
   const paymentMethods = getOptionsByType('payment_method');
   const creditCards = getOptionsByType('credit_card');
   const fundingSources = getOptionsByType('funding_source');
+
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [description, setDescription] = useState("");
   const [secondaryDescription, setSecondaryDescription] = useState("");
@@ -74,6 +78,20 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
       paidInstallments: paymentMethod === 'installments' || paymentMethod === 'credit_card' ? parseInt(paidInstallments) : 0,
       sameDayDue
     });
+  };
+
+  const handleQuickSeed = async () => {
+    if (!organization) return;
+    try {
+      setIsSeeding(true);
+      await SeedService.seedDefaultOptions(organization.id);
+      await refreshOptions();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao carregar opções padrão.");
+    } finally {
+      setIsSeeding(false);
+    }
   };
 
   return (
@@ -143,27 +161,49 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Categoria</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white"
-              >
-                {expenseCategories.map(cat => (
-                  <option key={cat.id} value={cat.value}>{cat.label}</option>
-                ))}
-              </select>
+              {expenseCategories.length > 0 ? (
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white font-medium"
+                >
+                  {expenseCategories.map(cat => (
+                    <option key={cat.id} value={cat.value}>{cat.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleQuickSeed}
+                  disabled={isSeeding}
+                  className="w-full px-4 py-3 rounded-xl border border-dashed border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold hover:bg-amber-100 transition-all"
+                >
+                  {isSeeding ? "Carregando..." : "Configurar Categorias"}
+                </button>
+              )}
             </div>
             <div className="space-y-1">
               <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Forma de Pagamento</label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white"
-              >
-                {paymentMethods.map(method => (
-                  <option key={method.id} value={method.value}>{method.label}</option>
-                ))}
-              </select>
+              {paymentMethods.length > 0 ? (
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white font-medium"
+                >
+                  {paymentMethods.map(method => (
+                    <option key={method.id} value={method.value}>{method.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleQuickSeed}
+                  disabled={isSeeding}
+                  className="w-full px-4 py-3 rounded-xl border border-dashed border-amber-200 bg-amber-50 text-amber-700 text-xs font-bold hover:bg-amber-100 transition-all"
+                >
+                  {isSeeding ? "Carregando..." : "Configurar Pagamento"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -184,15 +224,32 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Fonte do Pagamento</label>
-                <select
-                  value={fundingSource}
-                  onChange={(e) => setFundingSource(e.target.value as any)}
-                  className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white"
-                >
-                  {fundingSources.map(source => (
-                    <option key={source.id} value={source.value}>{source.label}</option>
-                  ))}
-                </select>
+                {fundingSources.length > 0 ? (
+                  <select
+                    value={fundingSource}
+                    onChange={(e) => setFundingSource(e.target.value as any)}
+                    className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white"
+                  >
+                    {fundingSources.map(source => (
+                      <option key={source.id} value={source.value}>{source.label}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[10px] text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                      Nenhuma fonte de pagamento encontrada.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleQuickSeed}
+                      disabled={isSeeding}
+                      className="text-[10px] flex items-center gap-1.5 text-brand-navy font-bold hover:underline"
+                    >
+                      <Sparkles size={12} />
+                      {isSeeding ? "Carregando..." : "Carregar Opções Padrão"}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {fundingSource === 'investment' && (
