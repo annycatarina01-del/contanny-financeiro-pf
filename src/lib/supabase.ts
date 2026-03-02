@@ -7,7 +7,7 @@ let supabase: any;
 
 if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('⚠️ Supabase credentials not configured. Using mock client.');
-    
+
     // Mock query builder
     const mockQueryBuilder = {
         select: () => mockQueryBuilder,
@@ -21,13 +21,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
     };
 
     // Create a mock supabase client
+    const configError = new Error('Supabase não configurado. Verifique se VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY estão definidos nas variáveis de ambiente do Vercel.');
+
     supabase = {
         from: () => mockQueryBuilder,
-        rpc: () => Promise.resolve({ data: null, error: null }),
+        rpc: () => Promise.resolve({ data: null, error: configError }),
         auth: {
-            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-            signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
-            signUp: () => Promise.resolve({ data: null, error: new Error('Supabase not configured') }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+            signInWithPassword: () => Promise.resolve({ data: null, error: configError }),
+            signUp: () => Promise.resolve({ data: null, error: configError }),
             signOut: () => Promise.resolve({ error: null }),
             getSession: () => Promise.resolve({ data: { session: null }, error: null }),
         }
