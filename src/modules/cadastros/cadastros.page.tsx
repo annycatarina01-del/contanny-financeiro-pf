@@ -3,14 +3,18 @@ import { AppOption, OptionType, CreateOptionDTO, UpdateOptionDTO } from "./cadas
 import { CadastrosService } from "./cadastros.service";
 import { OptionList } from "./components/OptionList";
 import { OptionForm } from "./components/OptionForm";
-import { Settings } from "lucide-react";
+import { Settings, Sparkles } from "lucide-react";
+import { SeedService } from "../../services/seedService";
+import { useOptions } from "../../contexts/OptionsContext";
 
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function CadastrosPage() {
   const { organization } = useAuth();
+  const { refreshOptions } = useOptions();
   const [options, setOptions] = useState<AppOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [currentType, setCurrentType] = useState<OptionType | null>(null);
   const [editingOption, setEditingOption] = useState<AppOption | undefined>(undefined);
@@ -73,6 +77,22 @@ export default function CadastrosPage() {
     }
   };
 
+  const handleSeed = async () => {
+    if (!organization) return;
+    try {
+      setSeeding(true);
+      await SeedService.seedDefaultOptions(organization.id);
+      await fetchData();
+      await refreshOptions();
+      alert("Padrões carregados com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao carregar padrões.");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -83,6 +103,14 @@ export default function CadastrosPage() {
           </h1>
           <p className="text-zinc-500">Gerencie as opções utilizadas em todo o aplicativo.</p>
         </div>
+        <button
+          onClick={handleSeed}
+          disabled={seeding}
+          className="flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+        >
+          <Sparkles size={20} />
+          {seeding ? "Carregando..." : "Carregar Padrões"}
+        </button>
       </div>
 
       {loading ? (

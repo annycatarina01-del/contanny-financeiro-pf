@@ -50,10 +50,12 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
     e.preventDefault();
     if (!description || !amount || !dueDate || !category || !paymentMethod) return;
 
+    const isCreditCard = paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito';
+
     let finalInvestmentId = undefined;
     if (paymentMethod === 'investment') {
       finalInvestmentId = investmentId;
-    } else if (paymentMethod === 'credit_card' && fundingSource === 'investment') {
+    } else if (isCreditCard && fundingSource === 'investment') {
       finalInvestmentId = investmentId;
     }
 
@@ -63,8 +65,8 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
       amount: parseFloat(amount),
       dueDate,
       category,
-      paymentMethod,
-      cardProvider: paymentMethod === 'credit_card' ? cardProvider : undefined,
+      paymentMethod: isCreditCard ? 'credit_card' : (paymentMethod as any),
+      cardProvider: isCreditCard ? cardProvider : undefined,
       investmentId: finalInvestmentId,
       isRepeated,
       months: isRepeated ? parseInt(months) : 1,
@@ -165,7 +167,7 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
             </div>
           </div>
 
-          {paymentMethod === 'credit_card' && (
+          {(paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito') && (
             <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Qual Cartão?</label>
@@ -229,7 +231,7 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
             </div>
           )}
 
-          {(paymentMethod === 'credit_card' || paymentMethod === 'installments') && (
+          {(paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito' || paymentMethod === 'installments') && (
             <div className="flex flex-col gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">

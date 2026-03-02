@@ -24,20 +24,22 @@ export const AuthService = {
 
         if (error) throw error;
 
-        // Fetch the user's organization
+        // Fetch all organizations the user is a member of
         const { data: members, error: memberError } = await supabase
             .from('organization_members')
-            .select('organization_id, organizations(id, name)')
-            .eq('user_id', data.user.id)
-            .limit(1);
+            .select('organization_id, role, organizations(id, name)')
+            .eq('user_id', data.user.id);
 
         if (memberError) throw memberError;
 
-        const firstMember = members?.[0];
+        const organizations = members?.map((m: any) => ({
+            ...m.organizations,
+            role: m.role
+        })) || [];
 
         return {
             user: data.user,
-            organization: (firstMember as any)?.organizations
+            organizations
         };
     },
 
@@ -53,20 +55,22 @@ export const AuthService = {
 
         const { data: members, error: memberError } = await supabase
             .from('organization_members')
-            .select('organization_id, organizations(id, name)')
-            .eq('user_id', session.user.id)
-            .limit(1);
+            .select('organization_id, role, organizations(id, name)')
+            .eq('user_id', session.user.id);
 
         if (memberError) {
-            console.error('Error fetching organization membership:', memberError);
+            console.error('Error fetching organization memberships:', memberError);
         }
 
-        const firstMember = members?.[0];
+        const organizations = members?.map((m: any) => ({
+            ...m.organizations,
+            role: m.role
+        })) || [];
 
         return {
             session,
             user: session.user,
-            organization: (firstMember as any)?.organizations
+            organizations
         };
     }
 };

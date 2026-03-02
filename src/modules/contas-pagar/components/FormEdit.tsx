@@ -44,10 +44,12 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
     e.preventDefault();
     if (!description || !amount || !dueDate || !category || !paymentMethod) return;
 
+    const isCreditCard = paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito';
+
     let finalInvestmentId = undefined;
     if (paymentMethod === 'investment') {
       finalInvestmentId = investmentId;
-    } else if (paymentMethod === 'credit_card' && fundingSource === 'investment') {
+    } else if (isCreditCard && fundingSource === 'investment') {
       finalInvestmentId = investmentId;
     }
 
@@ -57,8 +59,8 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
       amount: parseFloat(amount),
       dueDate,
       category,
-      paymentMethod,
-      cardProvider: paymentMethod === 'credit_card' ? cardProvider : undefined,
+      paymentMethod: isCreditCard ? 'credit_card' : (paymentMethod as any),
+      cardProvider: isCreditCard ? cardProvider : undefined,
       investmentId: finalInvestmentId,
     });
   };
@@ -153,7 +155,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
             </div>
           </div>
 
-          {paymentMethod === 'credit_card' && (
+          {(paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito') && (
             <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Qual Cartão?</label>

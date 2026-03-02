@@ -11,10 +11,12 @@ interface Organization {
 interface AuthContextData {
     user: User | null;
     organization: Organization | null;
+    organizations: Organization[];
     session: Session | null;
     loading: boolean;
     signOut: () => Promise<void>;
     refreshSession: () => Promise<void>;
+    setOrganization: (org: Organization) => void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [organization, setOrganization] = useState<Organization | null>(null);
+    const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -32,11 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data) {
                 setUser(data.user);
                 setSession(data.session);
-                setOrganization(data.organization as any);
+                setOrganizations(data.organizations as any);
+
+                // Restore selection or pick first
+                const savedOrgId = localStorage.getItem('selected_org_id');
+                const orgs = (data.organizations || []) as any[];
+                const selected = orgs.find(o => o.id === savedOrgId) || orgs[0] || null;
+                setOrganization(selected);
             } else {
                 setUser(null);
                 setSession(null);
                 setOrganization(null);
+                setOrganizations([]);
             }
         } catch (error) {
             console.error('Error refreshing session:', error);
@@ -69,10 +79,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         setSession(null);
         setOrganization(null);
+        setOrganizations([]);
+    };
+
+    const handleSetOrganization = (org: Organization) => {
+        setOrganization(org);
+        if (org) {
+            localStorage.setItem('selected_org_id', org.id);
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ user, organization, session, loading, signOut, refreshSession }}>
+        <AuthContext.Provider value={{
+            user,
+            organization,
+            organizations,
+            session,
+            loading,
+            signOut,
+            refreshSession,
+            setOrganization: handleSetOrganization
+        }}>
             {children}
         </AuthContext.Provider>
     );

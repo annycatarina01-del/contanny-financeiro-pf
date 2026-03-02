@@ -27,7 +27,7 @@ import { AccountService, Account } from "./services/accountService";
 const COLORS = ['#002d4b', '#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export default function App() {
-  const { user, organization, signOut, loading: authLoading, refreshSession } = useAuth();
+  const { user, organization, organizations, setOrganization, signOut, loading: authLoading, refreshSession } = useAuth();
   const { getOptionsByType } = useOptions();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [bills, setBills] = useState<BillPayable[]>([]);
@@ -272,6 +272,24 @@ export default function App() {
           )}
           <span className="text-xl font-bold tracking-tight text-center text-brand-navy">Cont. Anny</span>
         </div>
+
+        {organizations.length > 1 && (
+          <div className="mt-6 px-4">
+            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5 block px-1">Alternar Organização</label>
+            <select
+              value={organization?.id}
+              onChange={(e) => {
+                const org = organizations.find(o => o.id === e.target.value);
+                if (org) setOrganization(org);
+              }}
+              className="w-full bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl focus:ring-zinc-900 focus:border-zinc-900 block p-2.5 outline-none font-medium transition-all hover:bg-zinc-100"
+            >
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 px-4 space-y-2">
