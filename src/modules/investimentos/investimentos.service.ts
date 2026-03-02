@@ -3,14 +3,39 @@ import { Investment, CreateInvestmentDTO, UpdateInvestmentDTO } from "./investim
 
 export const InvestimentosService = {
   async getAll(orgId: string): Promise<Investment[]> {
-    const { data, error } = await supabase
+    const { data: investments, error: invError } = await supabase
       .from("investments")
       .select("*")
       .eq("organization_id", orgId)
       .order("purchase_date", { ascending: false });
 
-    if (error) throw error;
-    return data as any[];
+    if (invError) throw invError;
+
+    // Fetch pending payables linked to investments
+    const { data: payables, error: payError } = await supabase
+      .from("financial_entries")
+      .select("amount, investment_id")
+      .eq("organization_id", orgId)
+      .eq("type", "payable")
+      .eq("status", "pending")
+      .not("investment_id", "is", null);
+
+    if (payError) {
+      console.warn("Error fetching linked payables:", payError);
+      return investments as Investment[];
+    }
+
+    // Map total_linked_payable to each investment
+    return (investments as Investment[]).map(inv => {
+      const total = (payables || [])
+        .filter(p => p.investment_id === inv.id)
+        .reduce((sum, p) => sum + Number(p.amount), 0);
+
+      return {
+        ...inv,
+        total_linked_payable: total
+      };
+    });
   },
 
   async create(orgId: string, data: CreateInvestmentDTO): Promise<{ id: string }> {
