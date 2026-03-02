@@ -6,9 +6,10 @@ import { FormAdd } from "./components/FormAdd";
 import { FormEdit } from "./components/FormEdit";
 import { Kpis } from "./components/Kpis";
 import { Filters } from "./components/Filters";
-import { Plus, X, Calendar } from "lucide-react";
+import { Plus, X, Calendar, Filter, CalendarSearch } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { startOfMonth, endOfMonth, format, addMonths } from "date-fns";
+import { startOfMonth, endOfMonth, format, addMonths, isSameMonth, isSameYear } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { Account, AccountService } from "../../services/accountService";
@@ -28,6 +29,7 @@ export default function ContasPagarPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
   // Filters
+  const [showFilters, setShowFilters] = useState(false);
   const [startDate, setStartDate] = useState(format(startOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(endOfMonth(addMonths(new Date(), 1)), 'yyyy-MM-dd'));
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all');
@@ -156,6 +158,23 @@ export default function ContasPagarPage() {
     return matchesDate && matchesStatus && matchesCategory && matchesPaymentMethod && matchesCardProvider && matchesFundingSource;
   });
 
+  const getPeriodLabel = (start: string, end: string) => {
+    const startDate = new Date(start + 'T12:00:00');
+    const endDate = new Date(end + 'T12:00:00');
+
+    const isFullMonth =
+      startDate.getDate() === 1 &&
+      endDate.getDate() === endOfMonth(startDate).getDate() &&
+      isSameMonth(startDate, endDate) &&
+      isSameYear(startDate, endDate);
+
+    if (isFullMonth) {
+      return format(startDate, 'MMMM yyyy', { locale: ptBR });
+    }
+
+    return `${format(startDate, 'dd/MM')} a ${format(endDate, 'dd/MM/yyyy')}`;
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -163,36 +182,83 @@ export default function ContasPagarPage() {
           <h1 className="text-3xl font-bold text-zinc-900">Contas a Pagar</h1>
           <p className="text-zinc-500">Gerencie seus compromissos financeiros e evite atrasos.</p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-zinc-800 transition-all shadow-lg active:scale-95"
-        >
-          <Plus size={20} />
-          Nova Conta
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${showFilters
+              ? 'bg-zinc-100 text-zinc-900 border border-zinc-200 hover:bg-zinc-200'
+              : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+              }`}
+          >
+            <Filter size={20} />
+            Filtros
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-2xl font-bold hover:bg-zinc-800 transition-all shadow-lg active:scale-95"
+          >
+            <Plus size={20} />
+            Nova Conta
+          </button>
+        </div>
       </div>
 
-      <Filters
-        startDate={startDate}
-        endDate={endDate}
-        statusFilter={statusFilter}
-        categoryFilter={categoryFilter}
-        paymentMethodFilter={paymentMethodFilter}
-        cardProviderFilter={cardProviderFilter}
-        fundingSourceFilter={fundingSourceFilter}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
-        onStatusFilterChange={setStatusFilter}
-        onCategoryFilterChange={setCategoryFilter}
-        onPaymentMethodFilterChange={(method) => {
-          setPaymentMethodFilter(method as 'all' | PaymentMethod);
-          if (method !== 'credit_card') {
-            setCardProviderFilter('all');
-          }
-        }}
-        onCardProviderFilterChange={setCardProviderFilter}
-        onFundingSourceFilterChange={(source) => setFundingSourceFilter(source as 'all' | 'balance' | 'investment')}
-      />
+      {/* Period Context Card */}
+      <div className="bg-white px-6 py-4 rounded-3xl border border-zinc-200 shadow-sm flex items-center justify-between group">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-2xl flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
+            <Calendar size={24} />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Período Visualizado</p>
+            <h3 className="text-xl font-bold text-zinc-900 capitalize">
+              {getPeriodLabel(startDate, endDate)}
+            </h3>
+          </div>
+        </div>
+        {!showFilters && (
+          <button
+            onClick={() => setShowFilters(true)}
+            className="text-xs font-bold text-zinc-900 hover:text-zinc-600 transition-colors flex items-center gap-1.5"
+          >
+            <CalendarSearch size={14} />
+            Alterar Período
+          </button>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+            animate={{ height: 'auto', opacity: 1, marginBottom: 32 }}
+            exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+            className="overflow-hidden"
+          >
+            <Filters
+              startDate={startDate}
+              endDate={endDate}
+              statusFilter={statusFilter}
+              categoryFilter={categoryFilter}
+              paymentMethodFilter={paymentMethodFilter}
+              cardProviderFilter={cardProviderFilter}
+              fundingSourceFilter={fundingSourceFilter}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onStatusFilterChange={setStatusFilter}
+              onCategoryFilterChange={setCategoryFilter}
+              onPaymentMethodFilterChange={(method) => {
+                setPaymentMethodFilter(method as 'all' | PaymentMethod);
+                if (method !== 'credit_card') {
+                  setCardProviderFilter('all');
+                }
+              }}
+              onCardProviderFilterChange={setCardProviderFilter}
+              onFundingSourceFilterChange={(source) => setFundingSourceFilter(source as 'all' | 'balance' | 'investment')}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Kpis bills={filteredBills} />
 

@@ -78,11 +78,10 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
                 <td className="px-6 py-4 text-center">
                   <button
                     onClick={() => onToggleStatus(bill.id, bill.status)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                      bill.status === 'received' 
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${bill.status === 'received'
+                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
                         : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                    }`}
+                      }`}
                   >
                     {bill.status === 'received' ? (
                       <>
@@ -96,7 +95,7 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
                   </button>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-2 transition-opacity">
                     <button
                       onClick={() => onEdit(bill)}
                       className="p-2 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

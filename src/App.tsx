@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import { Transaction, Summary } from "./types";
-import { startOfMonth, endOfMonth, format } from "date-fns";
+import { startOfMonth, endOfMonth, format, isSameMonth, isSameYear } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { TransactionList } from "./components/TransactionList";
 import { TransactionForm } from "./components/TransactionForm";
 import { getFinancialInsights } from "./services/geminiService";
-import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut, Menu } from "lucide-react";
+import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut, Menu, Filter, Calendar, CalendarSearch } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
@@ -42,6 +43,7 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Filters
+  const [showFilters, setShowFilters] = useState(false);
   const [startDate, setStartDate] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<string>("");
@@ -332,6 +334,23 @@ export default function App() {
     </>
   );
 
+  const getPeriodLabel = (start: string, end: string) => {
+    const startDate = new Date(start + 'T12:00:00');
+    const endDate = new Date(end + 'T12:00:00');
+
+    const isFullMonth =
+      startDate.getDate() === 1 &&
+      endDate.getDate() === endOfMonth(startDate).getDate() &&
+      isSameMonth(startDate, endDate) &&
+      isSameYear(startDate, endDate);
+
+    if (isFullMonth) {
+      return format(startDate, 'MMMM yyyy', { locale: ptBR });
+    }
+
+    return `${format(startDate, 'dd/MM')} a ${format(endDate, 'dd/MM/yyyy')}`;
+  };
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-zinc-50">
       {/* Mobile Header */}
@@ -397,85 +416,135 @@ export default function App() {
                 <h1 className="text-3xl font-bold text-zinc-900">Olá, Bem-vindo!</h1>
                 <p className="text-zinc-500">Acompanhe suas finanças e tome melhores decisões.</p>
               </div>
-              <button
-                onClick={() => setShowForm(true)}
-                className="flex items-center justify-center gap-2 bg-brand-navy text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-navy/90 transition-all shadow-lg hover:shadow-xl active:scale-95"
-              >
-                <Plus size={20} />
-                Nova Transação
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${showFilters
+                    ? 'bg-zinc-100 text-zinc-900 border border-zinc-200 hover:bg-zinc-200'
+                    : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                    }`}
+                >
+                  <Filter size={20} />
+                  Filtros
+                </button>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="flex items-center justify-center gap-2 bg-brand-navy text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-navy/90 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                >
+                  <Plus size={20} />
+                  Nova Transação
+                </button>
+              </div>
             </header>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-end gap-4 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm mb-8">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">De</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
-                />
+            {/* Period Context Card */}
+            <div className="bg-white px-6 py-4 rounded-3xl border border-zinc-200 shadow-sm flex items-center justify-between group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-2xl flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
+                  <Calendar size={24} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Período Visualizado</p>
+                  <h3 className="text-xl font-bold text-zinc-900 capitalize">
+                    {getPeriodLabel(startDate, endDate)}
+                  </h3>
+                </div>
               </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Até</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1 min-w-[180px]">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Cat. Receitas</label>
-                <select
-                  value={selectedIncomeCategory}
-                  onChange={(e) => setSelectedIncomeCategory(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+              {!showFilters && (
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="text-xs font-bold text-brand-navy hover:text-brand-navy/70 transition-colors flex items-center gap-1.5"
                 >
-                  <option value="">Todas</option>
-                  {getOptionsByType('income_category').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1 min-w-[180px]">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Cat. Despesas</label>
-                <select
-                  value={selectedExpenseCategory}
-                  onChange={(e) => setSelectedExpenseCategory(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
-                >
-                  <option value="">Todas</option>
-                  {getOptionsByType('expense_category').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1 min-w-[180px]">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Forma de Pagamento</label>
-                <select
-                  value={selectedPaymentMethod}
-                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
-                >
-                  <option value="all">Todas</option>
-                  {getOptionsByType('payment_method').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1 min-w-[180px]">
-                <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Fonte de Pagamento</label>
-                <select
-                  value={selectedFundingSource}
-                  onChange={(e) => setSelectedFundingSource(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
-                >
-                  <option value="all">Todas</option>
-                  {getOptionsByType('funding_source').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
-                </select>
-              </div>
+                  <CalendarSearch size={14} />
+                  Alterar Período
+                </button>
+              )}
             </div>
+
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                  animate={{ height: 'auto', opacity: 1, marginBottom: 32 }}
+                  exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-wrap items-end gap-4 bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">De</label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Até</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1 min-w-[180px]">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Cat. Receitas</label>
+                      <select
+                        value={selectedIncomeCategory}
+                        onChange={(e) => setSelectedIncomeCategory(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      >
+                        <option value="">Todas</option>
+                        {getOptionsByType('income_category').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1 min-w-[180px]">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Cat. Despesas</label>
+                      <select
+                        value={selectedExpenseCategory}
+                        onChange={(e) => setSelectedExpenseCategory(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      >
+                        <option value="">Todas</option>
+                        {getOptionsByType('expense_category').map(c => <option key={c.id} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Pagamento</label>
+                      <select
+                        value={selectedPaymentMethod}
+                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      >
+                        <option value="all">Todos</option>
+                        <option value="credit_card">Cartão de Crédito</option>
+                        <option value="pix">PIX</option>
+                        <option value="transfer">Transferência</option>
+                        <option value="cash">Dinheiro</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1 min-w-[150px]">
+                      <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Fonte</label>
+                      <select
+                        value={selectedFundingSource}
+                        onChange={(e) => setSelectedFundingSource(e.target.value)}
+                        className="w-full px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50"
+                      >
+                        <option value="all">Todas</option>
+                        <option value="balance">Saldo / Salário</option>
+                        <option value="investment">Investimento</option>
+                      </select>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

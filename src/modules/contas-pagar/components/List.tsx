@@ -199,7 +199,7 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(bill.amount)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-2 transition-opacity">
                         <button
                           onClick={() => onToggleStatus(bill.id, bill.status)}
                           className={`p-2 rounded-lg transition-colors ${bill.status === 'paid' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
