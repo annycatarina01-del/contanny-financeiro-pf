@@ -26,26 +26,37 @@ export const ContasPagarService = {
   async create(orgId: string, data: CreateBillDTO): Promise<{ id: string }> {
     try {
       const installments = data.installments || 1;
-      const baseAmount = parseFloat((data.amount / installments).toFixed(2));
-      // Use local date parsing to avoid timezone shifts (YYYY-MM-DD)
-      // Create individual installments
+      const repetitions = data.isRepeated ? (data.months || 1) : 1;
+      const totalEntries = Math.max(installments, repetitions);
+
       const entries = [];
       const [year, month, day] = data.dueDate.split('-').map(Number);
 
-      for (let i = 1; i <= installments; i++) {
+      // Calculate amounts
+      let baseAmount = data.amount;
+      let firstInstallmentAmount = data.amount;
+
+      if (installments > 1) {
+        // Divide the total amount by installments, handle cents by rounding down the base
+        const baseCents = Math.floor((data.amount / installments) * 100);
+        baseAmount = baseCents / 100;
+        // The first installment takes the remainder to ensure sum equals exactly data.amount
+        const totalBaseCents = baseCents * (installments - 1);
+        firstInstallmentAmount = (Math.round(data.amount * 100) - totalBaseCents) / 100;
+      }
+
+      for (let i = 1; i <= totalEntries; i++) {
         // Create base date for each month to avoid cumulative shifts
         let installmentDateObj = addMonths(new Date(year, month - 1, day), i - 1);
-
-        // Ensure the day matches the original as much as possible 
-        // (date-fns addMonths handles the 31st vs 30th/28th correctly)
         const installmentDate = format(installmentDateObj, 'yyyy-MM-dd');
 
         const isPaid = i <= (data.paidInstallments || 0);
+        const currentAmount = i === 1 ? firstInstallmentAmount : baseAmount;
 
         entries.push({
           organization_id: orgId,
           description: data.description,
-          amount: baseAmount,
+          amount: currentAmount,
           due_date: installmentDate,
           type: "payable",
           status: isPaid ? "paid" : "pending",
@@ -53,8 +64,8 @@ export const ContasPagarService = {
           payment_method: data.paymentMethod,
           card_provider: data.cardProvider,
           investment_id: data.investmentId,
-          installment_number: i,
-          total_installments: installments,
+          installment_number: installments > 1 ? i : undefined,
+          total_installments: installments > 1 ? installments : undefined,
           secondary_description: data.secondaryDescription,
           payment_date: isPaid ? installmentDate : undefined,
         });
