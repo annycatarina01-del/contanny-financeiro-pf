@@ -12,7 +12,12 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    build: {
+      rollupOptions: {
+        external: ['better-sqlite3', 'express', 'https', 'http', 'url', 'axios'],
       },
     },
     server: {

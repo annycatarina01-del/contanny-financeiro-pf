@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { TransactionList } from "./components/TransactionList";
 import { TransactionForm } from "./components/TransactionForm";
 import { getFinancialInsights } from "./services/geminiService";
-import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut, Menu, Filter, Calendar, CalendarSearch } from "lucide-react";
+import { Plus, Wallet, ArrowUpCircle, ArrowDownCircle, Sparkles, PieChart as PieChartIcon, LayoutDashboard, CreditCard, X, Banknote, TrendingUp, Target, Settings, LogOut, Menu, Filter, Calendar, CalendarSearch, AlertCircle } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import Markdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";

@@ -1,8 +1,7 @@
 import { MonthlyGoal } from "../metas.types";
 import { CheckCircle2, XCircle, Pencil, Target, Trash2 } from "lucide-react";
 import { MetasService } from "../metas.service";
-import { useAuth } from "../../auth/hooks/useAuth";
-import { toast } from "react-hot-toast";
+import { useAuth } from "../../../contexts/AuthContext";
 
 interface GoalCardProps {
   goal: MonthlyGoal | null;
@@ -55,11 +54,11 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
     if (window.confirm("Tem certeza que deseja excluir esta meta? Esta ação não pode ser desfeita.")) {
       try {
         await MetasService.delete(organization.id, goal.id);
-        toast.success("Meta excluída com sucesso!");
+        alert("Meta excluída com sucesso!");
         onDelete();
       } catch (error) {
         console.error("Erro ao excluir meta:", error);
-        toast.error("Erro ao excluir a meta.");
+        alert("Erro ao excluir a meta.");
       }
     }
   };
