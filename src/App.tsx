@@ -232,14 +232,19 @@ export default function App() {
     projectedExpenses: 0
   });
 
+  const expenseCategories = getOptionsByType('expense_category');
+
   const chartData = Object.entries(
     filteredTransactions
       .filter(t => t.type === 'expense')
       .reduce((acc: any, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
+        acc[t.category] = (acc[t.category] || 0) + Math.abs(Number(t.amount));
         return acc;
       }, {})
-  ).map(([name, value]) => ({ name, value }));
+  ).map(([name, value]) => {
+    const categoryOption = expenseCategories.find(c => c.value === name);
+    return { name: categoryOption ? categoryOption.label : name, value };
+  });
 
   const totalBalance = useMemo(() => {
     return accounts.reduce((acc, curr) => acc + Number(curr.balance), 0);

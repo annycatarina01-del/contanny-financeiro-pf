@@ -14,6 +14,7 @@ interface ListProps {
 export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
   const { getOptionsByType } = useOptions();
   const paymentMethods = getOptionsByType('payment_method');
+  const incomeCategories = getOptionsByType('income_category');
 
   if (bills.length === 0) {
     return (
@@ -35,6 +36,10 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
 
   const getPaymentLabel = (method: string) => {
     return paymentMethods.find(m => m.value === method)?.label || method;
+  };
+
+  const getCategoryLabel = (category: string) => {
+    return incomeCategories.find(c => c.value === category)?.label || category;
   };
 
   return (
@@ -70,7 +75,7 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
                 </td>
                 <td className="px-6 py-4">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800">
-                    {bill.category}
+                    {getCategoryLabel(bill.category)}
                   </span>
                 </td>
                 <td className="px-6 py-4">
