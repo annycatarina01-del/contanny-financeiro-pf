@@ -20,7 +20,9 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
   const [category, setCategory] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | string>('boleto');
   const [isRepeated, setIsRepeated] = useState(false);
-  const [months, setMonths] = useState(2);
+  const [months, setMonths] = useState("1");
+  const [installments, setInstallments] = useState("1");
+  const [paidInstallments, setPaidInstallments] = useState("0");
 
   useEffect(() => {
     if (incomeCategories.length > 0 && !category) setCategory(incomeCategories[0].value);
@@ -38,13 +40,15 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
       category,
       paymentMethod: paymentMethod as PaymentMethod,
       isRepeated,
-      months: isRepeated ? Number(months) : undefined,
+      months: isRepeated ? Number(months) : 1,
+      installments: Number(installments),
+      paidInstallments: Number(paidInstallments),
     });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -137,38 +141,64 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
               </div>
             </div>
 
-            <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200">
-              <div className="flex items-center gap-3 mb-3">
+            <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-200 space-y-4">
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-1">Parcelamento & Repetição</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase mb-1 ml-1">Parcelas</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={installments}
+                    onChange={(e) => setInstallments(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none text-sm transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase mb-1 ml-1">Já Recebidas</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={Math.max(0, Number(installments) - 1)}
+                    value={paidInstallments}
+                    onChange={(e) => setPaidInstallments(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none text-sm transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${isRepeated ? 'bg-indigo-100 text-indigo-600' : 'bg-zinc-200 text-zinc-500'}`}>
                   <Repeat size={18} />
                 </div>
-                <div className="flex-1">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="checkbox" 
+                <div className="flex-1 flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
                       checked={isRepeated}
                       onChange={(e) => setIsRepeated(e.target.checked)}
                       className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                     />
                     <span className="text-sm font-medium text-zinc-900">Repetir mensalmente</span>
                   </label>
+                  {isRepeated && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-400">por</span>
+                      <input
+                        type="number"
+                        min="2"
+                        max="60"
+                        value={months}
+                        onChange={(e) => setMonths(e.target.value)}
+                        className="w-16 px-2 py-1 rounded-md border border-zinc-200 focus:ring-1 focus:ring-zinc-900 outline-none text-sm"
+                      />
+                      <span className="text-xs text-zinc-400">meses</span>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {isRepeated && (
-                <div className="ml-11 animate-in slide-in-from-top-2 duration-200">
-                  <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Por quantos meses?</label>
-                  <input
-                    type="number"
-                    min="2"
-                    max="60"
-                    value={months}
-                    onChange={(e) => setMonths(Number(e.target.value))}
-                    className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none text-sm"
-                  />
-                  <p className="text-xs text-zinc-400 mt-1">Serão criadas {months} contas iguais.</p>
-                </div>
-              )}
             </div>
           </div>
 

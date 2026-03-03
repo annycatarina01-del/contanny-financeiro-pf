@@ -74,8 +74,8 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
       investmentId: finalInvestmentId,
       isRepeated,
       months: isRepeated ? parseInt(months) : 1,
-      installments: paymentMethod === 'installments' || paymentMethod === 'credit_card' ? parseInt(installments) : 1,
-      paidInstallments: paymentMethod === 'installments' || paymentMethod === 'credit_card' ? parseInt(paidInstallments) : 0,
+      installments: parseInt(installments) > 1 ? parseInt(installments) : 1,
+      paidInstallments: parseInt(installments) > 1 ? parseInt(paidInstallments) : 0,
       sameDayDue
     });
   };
@@ -288,57 +288,41 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
             </div>
           )}
 
-          {(paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito' || paymentMethod === 'installments') && (
-            <div className="flex flex-col gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Quantidade de Parcelas</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="60"
-                    required
-                    value={installments}
-                    onChange={(e) => {
-                      setInstallments(e.target.value);
-                      if (parseInt(paidInstallments) >= parseInt(e.target.value)) {
-                        setPaidInstallments("0");
-                      }
-                    }}
-                    className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none transition-all"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Parcelas já pagas</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={Math.max(0, parseInt(installments) - 1)}
-                    required
-                    value={paidInstallments}
-                    onChange={(e) => setPaidInstallments(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 mt-2">
+          <div className="flex flex-col gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1 px-1">Parcelamento & Repetição</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Quantidade de Parcelas</label>
                 <input
-                  type="checkbox"
-                  id="sameDayDue"
-                  checked={sameDayDue}
-                  onChange={(e) => setSameDayDue(e.target.checked)}
-                  className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                  type="number"
+                  min="1"
+                  max="60"
+                  required
+                  value={installments}
+                  onChange={(e) => {
+                    setInstallments(e.target.value);
+                    if (parseInt(paidInstallments) >= parseInt(e.target.value)) {
+                      setPaidInstallments("0");
+                    }
+                  }}
+                  className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none transition-all"
                 />
-                <label htmlFor="sameDayDue" className="text-sm font-medium text-zinc-700 cursor-pointer select-none">
-                  Vencimento no mesmo dia todo mês
-                </label>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Já pagas</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={Math.max(0, parseInt(installments) - 1)}
+                  required
+                  value={paidInstallments}
+                  onChange={(e) => setPaidInstallments(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none transition-all"
+                />
               </div>
             </div>
-          )}
 
-          <div className="flex flex-col gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-100">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-1">
               <input
                 type="checkbox"
                 id="isRepeated"
@@ -347,24 +331,24 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
                 className="w-5 h-5 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
               />
               <label htmlFor="isRepeated" className="text-sm font-medium text-zinc-700 cursor-pointer select-none">
-                Repetir esta conta mensalmente
+                Repetir mensalmente
               </label>
+              {isRepeated && (
+                <div className="flex items-center gap-2 flex-1 ml-2">
+                  <span className="text-xs text-zinc-400">por</span>
+                  <input
+                    type="number"
+                    min="2"
+                    max="60"
+                    required
+                    value={months}
+                    onChange={(e) => setMonths(e.target.value)}
+                    className="w-16 px-2 py-1 rounded-md border border-zinc-200 focus:ring-1 focus:ring-zinc-900 outline-none transition-all text-sm"
+                  />
+                  <span className="text-xs text-zinc-400">meses</span>
+                </div>
+              )}
             </div>
-
-            {isRepeated && (
-              <div className="space-y-1 mt-2 animate-in slide-in-from-top-2 duration-200">
-                <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Por quantos meses?</label>
-                <input
-                  type="number"
-                  min="2"
-                  max="60"
-                  required
-                  value={months}
-                  onChange={(e) => setMonths(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none transition-all"
-                />
-              </div>
-            )}
           </div>
 
           <button

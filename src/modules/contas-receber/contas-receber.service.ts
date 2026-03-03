@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabase";
 import { BillReceivable, CreateReceivableDTO, ReceivableStatus } from "./contas-receber.types";
+import { addMonths, format } from "date-fns";
 
 export const ContasReceberService = {
   async getAll(orgId: string): Promise<BillReceivable[]> {
@@ -24,26 +25,63 @@ export const ContasReceberService = {
 
   async create(orgId: string, data: CreateReceivableDTO): Promise<{ id: string }> {
     try {
-      const { data: entry, error } = await supabase
-        .from("financial_entries")
-        .insert({
+      const installments = data.installments || 1;
+      const repetitions = data.isRepeated ? (data.months || 1) : 1;
+      const totalEntries = Math.max(installments, repetitions);
+
+      const entries = [];
+      const [year, month, day] = data.dueDate.split('-').map(Number);
+
+      // Calculate amounts
+      let baseAmount = data.amount;
+      let firstInstallmentAmount = data.amount;
+
+      if (installments > 1) {
+        const baseCents = Math.floor((data.amount / installments) * 100);
+        baseAmount = baseCents / 100;
+        const totalBaseCents = baseCents * (installments - 1);
+        firstInstallmentAmount = (Math.round(data.amount * 100) - totalBaseCents) / 100;
+      }
+
+      for (let i = 1; i <= totalEntries; i++) {
+        // Create date explicitly to avoid timezone issues
+        // new Date(year, month-1, day) is local time, which is usually what user expects for "day of month"
+        let installmentDateObj = addMonths(new Date(year, month - 1, day), i - 1);
+        const installmentDate = format(installmentDateObj, 'yyyy-MM-dd');
+
+        const isPaid = i <= (data.paidInstallments || 0);
+        const currentAmount = i === 1 ? firstInstallmentAmount : baseAmount;
+
+        entries.push({
           organization_id: orgId,
           description: data.description,
-          amount: data.amount,
-          due_date: data.dueDate,
+          amount: currentAmount,
+          due_date: installmentDate,
           type: "receivable",
-          status: "pending",
+          status: isPaid ? "received" : "pending",
           category: data.category,
           payment_method: data.paymentMethod,
-        })
-        .select()
-        .single();
+          installment_number: installments > 1 ? i : undefined,
+          total_installments: installments > 1 ? installments : undefined,
+          secondary_description: data.secondaryDescription,
+          payment_date: isPaid ? installmentDate : undefined,
+        });
+      }
 
-      if (error) throw error;
-      return { id: entry.id };
+      const { data: created, error } = await supabase
+        .from("financial_entries")
+        .insert(entries)
+        .select()
+        .limit(1);
+
+      if (error) {
+        console.error("Supabase error creating receivable:", error);
+        throw error;
+      }
+      return { id: created?.[0]?.id || Math.random().toString(36).substr(2, 9) };
     } catch (e) {
-      console.warn("Failed to create receivable:", e);
-      return { id: Math.random().toString(36).substr(2, 9) };
+      console.error("Failed to create receivable:", e);
+      throw e;
     }
   },
 

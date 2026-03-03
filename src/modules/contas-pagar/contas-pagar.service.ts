@@ -46,7 +46,8 @@ export const ContasPagarService = {
       }
 
       for (let i = 1; i <= totalEntries; i++) {
-        // Create base date for each month to avoid cumulative shifts
+        // Create date explicitly to avoid timezone issues
+        // new Date(year, month-1, day) is local time, which is usually what user expects for "day of month"
         let installmentDateObj = addMonths(new Date(year, month - 1, day), i - 1);
         const installmentDate = format(installmentDateObj, 'yyyy-MM-dd');
 

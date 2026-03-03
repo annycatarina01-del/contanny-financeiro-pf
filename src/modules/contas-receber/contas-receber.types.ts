@@ -26,10 +26,13 @@ export interface UpdateReceivableDTO {
 
 export interface CreateReceivableDTO {
   description: string;
+  secondaryDescription?: string;
   amount: number;
   dueDate: string;
   category: string;
   paymentMethod: PaymentMethod;
   isRepeated?: boolean;
   months?: number;
+  installments?: number;
+  paidInstallments?: number;
 }
