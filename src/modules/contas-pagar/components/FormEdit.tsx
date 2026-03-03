@@ -50,8 +50,10 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
 
     const isCreditCard = paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito';
 
+    const isInvestment = paymentMethod === 'investment' || paymentMethod === 'investimentos';
+
     let finalInvestmentId = undefined;
-    if (paymentMethod === 'investment') {
+    if (isInvestment) {
       finalInvestmentId = investmentId;
     } else if (isCreditCard && fundingSource === 'investment') {
       finalInvestmentId = investmentId;
@@ -259,7 +261,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
             </div>
           )}
 
-          {paymentMethod === 'investment' && (
+          {(paymentMethod === 'investment' || paymentMethod === 'investimentos') && (
             <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
               <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Qual Investimento?</label>
               <select

@@ -1,5 +1,5 @@
 export type BillStatus = 'pending' | 'paid';
-export type PaymentMethod = 'credit_card' | 'installments' | 'boleto' | 'investment';
+export type PaymentMethod = 'credit_card' | 'installments' | 'boleto' | 'investment' | 'investimentos';
 
 export interface BillPayable {
   id: string;

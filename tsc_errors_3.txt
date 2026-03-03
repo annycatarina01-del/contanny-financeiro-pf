@@ -1,0 +1,2 @@
+﻿server.ts(3,22): error TS2307: Cannot find module 'better-sqlite3' or its corresponding type declarations.
+src/App.tsx(444,14): error TS2304: Cannot find name 'AlertCircle'.

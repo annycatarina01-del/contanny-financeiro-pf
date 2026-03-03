@@ -65,7 +65,8 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
       case 'credit_card': return <CreditCard size={14} />;
       case 'boleto': return <Banknote size={14} />;
       case 'installments': return <CalendarClock size={14} />;
-      case 'investment': return <TrendingUp size={14} />;
+      case 'investment':
+      case 'investimentos': return <TrendingUp size={14} />;
       default: return <Banknote size={14} />;
     }
   };
