@@ -57,11 +57,12 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
     const isCreditCard = paymentMethod === 'credit_card' || paymentMethod === 'cart_o_de_cr_dito';
 
     const isInvestment = paymentMethod === 'investment' || paymentMethod === 'investimentos';
+    const isFundingInvestment = fundingSource === 'investment' || fundingSource === 'investimentos';
 
     let finalInvestmentId = undefined;
     if (isInvestment) {
       finalInvestmentId = investmentId;
-    } else if (isCreditCard && fundingSource === 'investment') {
+    } else if (isCreditCard && isFundingInvestment) {
       finalInvestmentId = investmentId;
     }
 

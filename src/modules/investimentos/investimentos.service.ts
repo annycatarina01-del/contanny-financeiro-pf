@@ -106,10 +106,13 @@ export const InvestimentosService = {
 
     if (transError) throw transError;
 
-    // Update investment value (simple update for now)
-    const { data: inv } = await supabase.from('investments').select('current_value').eq('id', id).single();
+    // Update investment value (subtract from both current_value and amount_invested)
+    const { data: inv } = await supabase.from('investments').select('current_value, amount_invested').eq('id', id).single();
     if (inv) {
-      await supabase.from('investments').update({ current_value: inv.current_value - amount }).eq('id', id);
+      await supabase.from('investments').update({
+        current_value: Number(inv.current_value) - amount,
+        amount_invested: Number(inv.amount_invested) - amount
+      }).eq('id', id);
     }
   }
 };
