@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ContasPagarService } from "./contas-pagar.service";
 import { BillPayable, CreateBillDTO, PaymentMethod } from "./contas-pagar.types";
 import { List } from "./components/List";
@@ -6,10 +6,12 @@ import { FormAdd } from "./components/FormAdd";
 import { FormEdit } from "./components/FormEdit";
 import { Kpis } from "./components/Kpis";
 import { Filters } from "./components/Filters";
-import { Plus, X, Calendar, Filter, CalendarSearch } from "lucide-react";
+import { Plus, X, Calendar, Filter, CalendarSearch, FileDown, ChevronDown } from "lucide-react";
+import { exportContasPagarToPDF, exportContasPagarResumoPDF } from "../../lib/pdfExport";
 import { motion, AnimatePresence } from "motion/react";
 import { startOfMonth, endOfMonth, format, addMonths, isSameMonth, isSameYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useOptions } from "../../contexts/OptionsContext";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { Account, AccountService } from "../../services/accountService";
@@ -21,12 +23,37 @@ export default function ContasPagarPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingBill, setEditingBill] = useState<BillPayable | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPdfMenu, setShowPdfMenu] = useState(false);
+  const pdfMenuRef = useRef<HTMLDivElement>(null);
 
   // Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentDate, setPaymentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [idsToPay, setIdsToPay] = useState<string[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+
+  // Label resolvers from options context
+  const { getOptionsByType } = useOptions();
+  const paymentMethodOptions = getOptionsByType('payment_method');
+  const categoryOptions = getOptionsByType('expense_category');
+  const creditCardOptions = getOptionsByType('credit_card');
+  const fundingSourceOptions = getOptionsByType('funding_source');
+
+  const PAYMENT_METHOD_FALLBACK: Record<string, string> = {
+    credit_card: 'Cartão de Crédito', debit_card: 'Cartão de Débito', boleto: 'Boleto',
+    pix: 'PIX', cash: 'Dinheiro', transfer: 'Transferência',
+    installments: 'Parcelado', investment: 'Investimentos', investimentos: 'Investimentos', other: 'Outro',
+  };
+  const getPaymentMethodLabel = (method: string) =>
+    paymentMethodOptions.find(m => m.value === method)?.label || PAYMENT_METHOD_FALLBACK[method] || method;
+  const getCategoryLabel = (value: string) =>
+    categoryOptions.find(c => c.value === value)?.label || value;
+  const getCardLabel = (value: string) =>
+    creditCardOptions.find(c => c.value === value)?.label || value;
+  const getFundingSourceLabel = (bill: BillPayable) => {
+    if (bill.investment_id) return fundingSourceOptions.find(f => f.value === 'investment' || f.value === 'investimentos')?.label || 'Investimento';
+    return fundingSourceOptions.find(f => f.value === 'balance' || f.value === 'saldo')?.label || 'Saldo / Salário';
+  };
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -145,7 +172,7 @@ export default function ContasPagarPage() {
     const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : bill.payment_method === paymentMethodFilter;
 
     let matchesCardProvider = true;
-    if (paymentMethodFilter === 'credit_card' && cardProviderFilter !== 'all') {
+    if (cardProviderFilter !== 'all') {
       matchesCardProvider = bill.card_provider === cardProviderFilter;
     }
 
@@ -186,6 +213,50 @@ export default function ContasPagarPage() {
           <p className="text-zinc-500">Gerencie seus compromissos financeiros e evite atrasos.</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* PDF Export Dropdown */}
+          <div className="relative" ref={pdfMenuRef}>
+            <button
+              onClick={() => setShowPdfMenu(prev => !prev)}
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50"
+            >
+              <FileDown size={20} />
+              Exportar PDF
+              <ChevronDown size={16} className={`transition-transform ${showPdfMenu ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {showPdfMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.97 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute right-0 mt-2 w-52 bg-white border border-zinc-200 rounded-2xl shadow-xl z-50 overflow-hidden"
+                >
+                  <button
+                    onClick={() => {
+                      exportContasPagarToPDF(filteredBills, getPeriodLabel(startDate, endDate), getPaymentMethodLabel, getCategoryLabel);
+                      setShowPdfMenu(false);
+                    }}
+                    className="w-full text-left px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2"
+                  >
+                    <FileDown size={15} />
+                    Detalhado
+                  </button>
+                  <div className="h-px bg-zinc-100 mx-4" />
+                  <button
+                    onClick={() => {
+                      exportContasPagarResumoPDF(filteredBills, getPeriodLabel(startDate, endDate), getPaymentMethodLabel, getCategoryLabel, getCardLabel, getFundingSourceLabel);
+                      setShowPdfMenu(false);
+                    }}
+                    className="w-full text-left px-5 py-3 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors flex items-center gap-2"
+                  >
+                    <FileDown size={15} />
+                    Resumo
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${showFilters

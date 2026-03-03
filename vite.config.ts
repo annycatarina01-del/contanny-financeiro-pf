@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    optimizeDeps: {
+      include: ['jspdf', 'jspdf-autotable', 'recharts', 'react-is'],
+    },
     build: {
       rollupOptions: {
         external: ['better-sqlite3', 'express', 'https', 'http', 'url', 'axios'],

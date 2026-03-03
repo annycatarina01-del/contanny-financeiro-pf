@@ -18,6 +18,9 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { getOptionsByType } = useOptions();
   const paymentMethods = getOptionsByType('payment_method');
+  const categories = getOptionsByType('expense_category');
+  const creditCards = getOptionsByType('credit_card');
+  const fundingSources = getOptionsByType('funding_source');
 
   if (bills.length === 0) {
     return (
@@ -71,8 +74,35 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
     }
   };
 
+  const PAYMENT_METHOD_FALLBACK: Record<string, string> = {
+    credit_card: 'Cartão de Crédito',
+    debit_card: 'Cartão de Débito',
+    boleto: 'Boleto',
+    pix: 'PIX',
+    cash: 'Dinheiro',
+    transfer: 'Transferência',
+    installments: 'Parcelado',
+    investment: 'Investimentos',
+    investimentos: 'Investimentos',
+  };
+
   const getPaymentMethodLabel = (method: string) => {
-    return paymentMethods.find(m => m.value === method)?.label || method;
+    return paymentMethods.find(m => m.value === method)?.label
+      || PAYMENT_METHOD_FALLBACK[method]
+      || method;
+  };
+
+  const getCardProviderLabel = (provider: string) => {
+    return creditCards.find(c => c.value === provider)?.label || provider;
+  };
+
+  const getFundingSourceLabel = (bill: BillPayable) => {
+    if (bill.investment_id) {
+      const investmentSource = fundingSources.find(f => f.value === 'investment' || f.value === 'investimentos');
+      return investmentSource?.label || 'Investimento';
+    }
+    const balanceSource = fundingSources.find(f => f.value === 'balance' || f.value === 'saldo');
+    return balanceSource?.label || 'Saldo / Salário';
   };
 
   return (
@@ -171,7 +201,7 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
                     </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800">
-                        {bill.category}
+                        {categories.find(c => c.value === bill.category)?.label || bill.category}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -181,13 +211,13 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
                           <span>{getPaymentMethodLabel(bill.payment_method)}</span>
                         </div>
                         {bill.payment_method === 'credit_card' && bill.card_provider && (
-                          <span className="text-xs text-zinc-400 pl-5">{bill.card_provider}</span>
+                          <span className="text-xs text-zinc-400 pl-5">{getCardProviderLabel(bill.card_provider)}</span>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm text-zinc-600">
-                        {bill.investment_id ? 'Investimento' : 'Saldo / Salário'}
+                        {getFundingSourceLabel(bill)}
                       </span>
                     </td>
                     <td className="px-6 py-4">

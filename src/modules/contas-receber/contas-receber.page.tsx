@@ -6,7 +6,8 @@ import { FormAdd } from "./components/FormAdd";
 import { FormEdit } from "./components/FormEdit";
 import { Kpis } from "./components/Kpis";
 import { Filters } from "./components/Filters";
-import { Plus, X, Calendar, Filter, CalendarSearch } from "lucide-react";
+import { Plus, X, Calendar, Filter, CalendarSearch, FileDown } from "lucide-react";
+import { exportContasReceberToPDF } from "../../lib/pdfExport";
 import { motion, AnimatePresence } from "motion/react";
 import { startOfMonth, endOfMonth, format, addMonths, isSameMonth, isSameYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -159,6 +160,13 @@ export default function ContasReceberPage() {
           <p className="text-zinc-500">Gerencie seus recebimentos futuros e mantenha o caixa saudável.</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => exportContasReceberToPDF(filteredBills, getPeriodLabel(startDate, endDate))}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50"
+          >
+            <FileDown size={20} />
+            Exportar PDF
+          </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${showFilters

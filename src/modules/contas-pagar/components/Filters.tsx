@@ -50,8 +50,8 @@ export function Filters({
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-bold text-zinc-500 uppercase ml-1">De</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
           className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50 text-sm"
@@ -60,8 +60,8 @@ export function Filters({
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Até</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
           className="px-4 py-2 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-zinc-50 text-sm"
@@ -109,8 +109,8 @@ export function Filters({
         </select>
       </div>
 
-      {paymentMethodFilter === 'credit_card' && (
-        <div className="flex flex-col gap-1 min-w-[150px] animate-in slide-in-from-left-2 duration-200">
+      {creditCards.length > 0 && (
+        <div className="flex flex-col gap-1 min-w-[150px]">
           <label className="text-xs font-bold text-zinc-500 uppercase ml-1">Cartão</label>
           <select
             value={cardProviderFilter}
