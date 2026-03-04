@@ -6,6 +6,7 @@ export interface AppOption {
   type: OptionType;
   label: string;
   value: string;
+  metadata?: { expense_type?: string } | Record<string, any>;
   created_at: string;
 }
 
@@ -13,9 +14,11 @@ export interface CreateOptionDTO {
   type: OptionType;
   label: string;
   value: string;
+  metadata?: { expense_type?: string } | Record<string, any>;
 }
 
 export interface UpdateOptionDTO {
   label?: string;
   value?: string;
+  metadata?: { expense_type?: string } | Record<string, any>;
 }

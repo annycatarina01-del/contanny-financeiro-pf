@@ -11,10 +11,11 @@ interface ListProps {
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, currentStatus: string) => void;
   onBulkPay?: (ids: string[]) => void;
+  onBulkDelete?: (ids: string[]) => void;
   onEdit: (bill: BillPayable) => void;
 }
 
-export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: ListProps) {
+export function List({ bills, onDelete, onToggleStatus, onBulkPay, onBulkDelete, onEdit }: ListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { getOptionsByType } = useOptions();
   const paymentMethods = getOptionsByType('payment_method');
@@ -50,6 +51,15 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
     if (onBulkPay) {
       onBulkPay(selectedIds);
       setSelectedIds([]);
+    }
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (onBulkDelete) {
+      if (window.confirm(`Tem certeza que deseja excluir ${selectedIds.length} contas selecionadas?`)) {
+        onBulkDelete(selectedIds);
+        setSelectedIds([]);
+      }
     }
   };
 
@@ -123,6 +133,13 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onEdit }: Lis
             >
               <CheckCircle size={18} />
               Confirmar Pagamento
+            </button>
+            <button
+              onClick={handleBulkDeleteClick}
+              className="flex items-center gap-2 hover:text-rose-400 transition-colors font-bold ml-2"
+            >
+              <Trash2 size={18} />
+              Excluir
             </button>
             <button
               onClick={() => setSelectedIds([])}

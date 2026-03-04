@@ -12,10 +12,13 @@ interface GoalCardProps {
   essentialSpent: number;
   leisureSpent: number;
   investmentSpent: number;
+  essentialCommitted: number;
+  leisureCommitted: number;
+  investmentCommitted: number;
   onDelete: () => void;
 }
 
-export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpent, leisureSpent, investmentSpent, onDelete }: GoalCardProps) {
+export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpent, leisureSpent, investmentSpent, essentialCommitted, leisureCommitted, investmentCommitted, onDelete }: GoalCardProps) {
   const { organization } = useAuth();
 
   if (!goal) {
@@ -44,9 +47,13 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
   const leisureTarget = (income * goal.leisure_percent) / 100;
   const investmentTarget = (income * goal.investment_percent) / 100;
 
-  const essentialProgress = essentialTarget > 0 ? Math.min(100, (essentialSpent / essentialTarget) * 100) : 0;
-  const leisureProgress = leisureTarget > 0 ? Math.min(100, (leisureSpent / leisureTarget) * 100) : 0;
-  const investmentProgress = investmentTarget > 0 ? Math.min(100, (investmentSpent / investmentTarget) * 100) : 0;
+  const totalEssential = essentialSpent + essentialCommitted;
+  const totalLeisure = leisureSpent + leisureCommitted;
+  const totalInvestment = investmentSpent + investmentCommitted;
+
+  const essentialProgress = essentialTarget > 0 ? Math.min(100, (totalEssential / essentialTarget) * 100) : 0;
+  const leisureProgress = leisureTarget > 0 ? Math.min(100, (totalLeisure / leisureTarget) * 100) : 0;
+  const investmentProgress = investmentTarget > 0 ? Math.min(100, (totalInvestment / investmentTarget) * 100) : 0;
 
   const handleDelete = async () => {
     if (!goal || !organization) return;
@@ -129,17 +136,22 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-zinc-500">Gasto Atual</span>
-              <span className={`font-bold ${essentialSpent > essentialTarget ? 'text-rose-600' : 'text-zinc-900'}`}>
+              <span className={`font-bold ${totalEssential > essentialTarget ? 'text-rose-600' : 'text-zinc-900'}`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(essentialSpent)}
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${essentialSpent > essentialTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
+                className={`h-full rounded-full ${totalEssential > essentialTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
                 style={{ width: `${essentialProgress}%` }}
               />
             </div>
-            <p className="text-xs text-right text-zinc-400">{essentialProgress.toFixed(0)}% utilizado</p>
+            <div className="flex justify-between items-center mt-1 text-xs">
+              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(essentialCommitted)}</span>
+              </span>
+              <span className="text-zinc-400 font-medium whitespace-nowrap">{essentialProgress.toFixed(0)}% utilizado</span>
+            </div>
           </div>
         </div>
 
@@ -154,17 +166,22 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-zinc-500">Gasto Atual</span>
-              <span className={`font-bold ${leisureSpent > leisureTarget ? 'text-rose-600' : 'text-zinc-900'}`}>
+              <span className={`font-bold ${totalLeisure > leisureTarget ? 'text-rose-600' : 'text-zinc-900'}`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(leisureSpent)}
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${leisureSpent > leisureTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
+                className={`h-full rounded-full ${totalLeisure > leisureTarget ? 'bg-rose-500' : 'bg-indigo-500'}`}
                 style={{ width: `${leisureProgress}%` }}
               />
             </div>
-            <p className="text-xs text-right text-zinc-400">{leisureProgress.toFixed(0)}% utilizado</p>
+            <div className="flex justify-between items-center mt-1 text-xs">
+              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(leisureCommitted)}</span>
+              </span>
+              <span className="text-zinc-400 font-medium whitespace-nowrap">{leisureProgress.toFixed(0)}% utilizado</span>
+            </div>
           </div>
         </div>
 
@@ -179,17 +196,22 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-zinc-500">Investido Atual</span>
-              <span className={`font-bold ${investmentSpent < investmentTarget ? 'text-amber-600' : 'text-emerald-600'}`}>
+              <span className={`font-bold ${totalInvestment < investmentTarget ? 'text-amber-600' : 'text-emerald-600'}`}>
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investmentSpent)}
               </span>
             </div>
             <div className="h-2 bg-zinc-200 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full ${investmentSpent < investmentTarget ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                className={`h-full rounded-full ${totalInvestment < investmentTarget ? 'bg-amber-500' : 'bg-emerald-500'}`}
                 style={{ width: `${investmentProgress}%` }}
               />
             </div>
-            <p className="text-xs text-right text-zinc-400">{investmentProgress.toFixed(0)}% alcançado</p>
+            <div className="flex justify-between items-center mt-1 text-xs">
+              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
+                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investmentCommitted)}</span>
+              </span>
+              <span className="text-zinc-400 font-medium whitespace-nowrap">{investmentProgress.toFixed(0)}% alcançado</span>
+            </div>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ export const CadastrosService = {
       console.warn("CadastrosService.getAll called without orgId");
       return [];
     }
-    
+
     const { data, error } = await supabase
       .from("app_options")
       .select("*")
@@ -30,6 +30,7 @@ export const CadastrosService = {
         type: data.type,
         label: data.label,
         value: data.value,
+        metadata: data.metadata,
       })
       .select()
       .single();
@@ -44,6 +45,7 @@ export const CadastrosService = {
       .update({
         label: data.label,
         value: data.value,
+        metadata: data.metadata,
       })
       .eq("id", id)
       .eq("organization_id", orgId);

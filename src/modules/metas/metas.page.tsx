@@ -8,6 +8,7 @@ import { Target, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { AnimatePresence } from "motion/react";
+import { useOptions } from "../../contexts/OptionsContext";
 
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -24,6 +25,7 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showEvaluate, setShowEvaluate] = useState(false);
+  const { getOptionsByType } = useOptions();
 
   const monthStr = format(currentDate, "yyyy-MM");
 
@@ -79,7 +81,7 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
 
   // Calculate totals for the current month
   const monthTransactions = transactions.filter(t => t.date.startsWith(monthStr));
-  const monthBills = bills.filter(b => b.status === 'paid' && (b.payment_date || b.due_date).startsWith(monthStr));
+  const monthBills = bills.filter(b => b.status === 'paid' && b.due_date.startsWith(monthStr));
 
   // All receivables for the month (pending and received)
   const allMonthReceivables = receivables.filter(r => r.due_date.startsWith(monthStr));
@@ -94,21 +96,57 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
 
   const totalIncome = realizedIncome + pendingIncome;
 
-  const essentialCategories = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação'];
-  const leisureCategories = ['Lazer', 'Outros'];
-  const investmentCategories = ['Investimentos'];
+  const expenseCategories = getOptionsByType('expense_category');
 
+  const getCategoriesByType = (type: string) => {
+    return expenseCategories
+      .filter(c => {
+        const meta = c.metadata as any;
+        return meta?.expense_type === type;
+      })
+      .map(c => c.value);
+  };
+
+  const essentialCategories = getCategoriesByType('essencial');
+  const leisureCategories = getCategoriesByType('lazer');
+  const investmentCategories = getCategoriesByType('investimento');
+
+  // Also include the legacy hardcoded strings for backward compatibility if any old records exist
+  const legacyEssential = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'alimentacao', 'moradia', 'transporte', 'saude', 'educacao'];
+  const legacyLeisure = ['Lazer', 'Outros', 'lazer', 'outros'];
+  const legacyInvestment = ['Investimentos', 'investimentos'];
+
+  const allEssentialCategories = [...essentialCategories, ...legacyEssential];
+  const allLeisureCategories = [...leisureCategories, ...legacyLeisure];
+  const allInvestmentCategories = [...investmentCategories, ...legacyInvestment];
+
+  // Realized Spent (Transactions + Paid Bills)
   const essentialSpent =
-    monthTransactions.filter(t => t.type === 'expense' && essentialCategories.includes(t.category)).reduce((acc, t) => acc + t.amount, 0) +
-    monthBills.filter(b => essentialCategories.includes(b.category)).reduce((acc, b) => acc + b.amount, 0);
+    monthTransactions.filter(t => t.type === 'expense' && allEssentialCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => allEssentialCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const leisureSpent =
-    monthTransactions.filter(t => t.type === 'expense' && leisureCategories.includes(t.category)).reduce((acc, t) => acc + t.amount, 0) +
-    monthBills.filter(b => leisureCategories.includes(b.category)).reduce((acc, b) => acc + b.amount, 0);
+    monthTransactions.filter(t => t.type === 'expense' && allLeisureCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => allLeisureCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const investmentSpent =
-    monthTransactions.filter(t => t.type === 'expense' && investmentCategories.includes(t.category)).reduce((acc, t) => acc + t.amount, 0) +
-    monthBills.filter(b => investmentCategories.includes(b.category)).reduce((acc, b) => acc + b.amount, 0);
+    monthTransactions.filter(t => t.type === 'expense' && allInvestmentCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => allInvestmentCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+
+  // Committed (Pending Bills)
+  const monthPendingBills = bills.filter(b => b.status === 'pending' && b.due_date.startsWith(monthStr));
+
+  const essentialCommitted = monthPendingBills
+    .filter(b => allEssentialCategories.includes(b.category))
+    .reduce((acc, b) => acc + Math.abs(b.amount), 0);
+
+  const leisureCommitted = monthPendingBills
+    .filter(b => allLeisureCategories.includes(b.category))
+    .reduce((acc, b) => acc + Math.abs(b.amount), 0);
+
+  const investmentCommitted = monthPendingBills
+    .filter(b => allInvestmentCategories.includes(b.category))
+    .reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   return (
     <div className="space-y-8">
@@ -159,6 +197,9 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
             essentialSpent={essentialSpent}
             leisureSpent={leisureSpent}
             investmentSpent={investmentSpent}
+            essentialCommitted={essentialCommitted}
+            leisureCommitted={leisureCommitted}
+            investmentCommitted={investmentCommitted}
             onDelete={fetchGoal}
           />
         </div>

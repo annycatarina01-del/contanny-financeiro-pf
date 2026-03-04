@@ -5,13 +5,16 @@ import { X } from "lucide-react";
 interface OptionFormProps {
   type: OptionType;
   option?: AppOption;
-  onSave: (data: { type: OptionType; label: string; value: string }) => void;
+  onSave: (data: { type: OptionType; label: string; value: string; metadata?: any }) => void;
   onClose: () => void;
 }
 
 export function OptionForm({ type, option, onSave, onClose }: OptionFormProps) {
   const [label, setLabel] = useState(option?.label || "");
   const [value, setValue] = useState(option?.value || "");
+  const [expenseType, setExpenseType] = useState<string>(
+    (option?.metadata as any)?.expense_type || "essencial"
+  );
 
   // Auto-generate value from label if creating new
   useEffect(() => {
@@ -23,7 +26,8 @@ export function OptionForm({ type, option, onSave, onClose }: OptionFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ type, label, value });
+    const metadata = type === 'expense_category' ? { expense_type: expenseType } : undefined;
+    onSave({ type, label, value, metadata });
   };
 
   const getTitle = () => {
@@ -75,6 +79,24 @@ export function OptionForm({ type, option, onSave, onClose }: OptionFormProps) {
               Identificador único usado pelo sistema. Evite espaços e caracteres especiais.
             </p>
           </div>
+
+          {type === 'expense_category' && (
+            <div className="space-y-1 mt-4">
+              <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Tipo de Despesa</label>
+              <select
+                value={expenseType}
+                onChange={(e) => setExpenseType(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-zinc-200 focus:ring-2 focus:ring-zinc-900 outline-none bg-white"
+              >
+                <option value="essencial">Essencial</option>
+                <option value="lazer">Lazer / Outros</option>
+                <option value="investimento">Investimento</option>
+              </select>
+              <p className="text-xs text-zinc-400 ml-1 mt-1">
+                Define em qual categoria das <strong>Metas Mensais</strong> esta despesa se encaixa.
+              </p>
+            </div>
+          )}
 
           <button
             type="submit"
