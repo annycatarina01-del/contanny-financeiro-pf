@@ -87,21 +87,18 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
   const allMonthReceivables = receivables.filter(r => r.due_date.startsWith(monthStr));
 
   // Income from manual transactions (Dashboard "Nova Transação" flow)
+  // This ALSO includes transactions automatically generated when a pending receivable is paid.
   const monthIncomeTransactions = monthTransactions.filter(t => t.type === 'income');
   const transactionIncome = monthIncomeTransactions.reduce((acc, t) => acc + t.amount, 0);
-
-  // Receivables already received (marked as 'received' in contas-receber)
-  // The payment RPC does NOT create a separate income transaction, so we count receivables directly
-  const receivedReceivables = allMonthReceivables.filter(r => r.status === 'received');
-  const realizedReceivableIncome = receivedReceivables.reduce((acc, r) => acc + r.amount, 0);
 
   // All pending receivables for the month (expected to receive)
   const pendingReceivables = allMonthReceivables.filter(r => r.status === 'pending');
   const pendingIncome = pendingReceivables.reduce((acc, r) => acc + r.amount, 0);
 
-  // Total income = manual income transactions + already received + pending receivables
-  const realizedIncome = transactionIncome + realizedReceivableIncome;
-  const totalIncome = realizedIncome + pendingIncome;
+  // Total income = manual income transactions + already received (via transactions) + pending receivables
+  // The payment RPC creates a separate income transaction when a receivable is paid, 
+  // so `transactionIncome` already includes the realized receivables. We only need to add `pendingIncome`.
+  const totalIncome = transactionIncome + pendingIncome;
 
 
   const expenseCategories = getOptionsByType('expense_category');
