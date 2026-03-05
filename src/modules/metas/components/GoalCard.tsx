@@ -146,11 +146,14 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
                 style={{ width: `${essentialProgress}%` }}
               />
             </div>
-            <div className="flex justify-between items-center mt-1 text-xs">
-              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
-                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(essentialCommitted)}</span>
-              </span>
-              <span className="text-zinc-400 font-medium whitespace-nowrap">{essentialProgress.toFixed(0)}% utilizado</span>
+            <div className="mt-2 space-y-0.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-zinc-500 font-medium">Comprometido (A Pagar):</span>
+                <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(essentialCommitted)}</span>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-zinc-400 font-medium">{essentialProgress.toFixed(0)}% utilizado</span>
+              </div>
             </div>
           </div>
         </div>
@@ -176,11 +179,14 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
                 style={{ width: `${leisureProgress}%` }}
               />
             </div>
-            <div className="flex justify-between items-center mt-1 text-xs">
-              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
-                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(leisureCommitted)}</span>
-              </span>
-              <span className="text-zinc-400 font-medium whitespace-nowrap">{leisureProgress.toFixed(0)}% utilizado</span>
+            <div className="mt-2 space-y-0.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-zinc-500 font-medium">Comprometido (A Pagar):</span>
+                <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(leisureCommitted)}</span>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-zinc-400 font-medium">{leisureProgress.toFixed(0)}% utilizado</span>
+              </div>
             </div>
           </div>
         </div>
@@ -206,11 +212,14 @@ export function GoalCard({ goal, month, onEdit, onEvaluate, income, essentialSpe
                 style={{ width: `${investmentProgress}%` }}
               />
             </div>
-            <div className="flex justify-between items-center mt-1 text-xs">
-              <span className="text-zinc-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis mr-2">
-                Comprometido (A Pagar): <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investmentCommitted)}</span>
-              </span>
-              <span className="text-zinc-400 font-medium whitespace-nowrap">{investmentProgress.toFixed(0)}% alcançado</span>
+            <div className="mt-2 space-y-0.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-zinc-500 font-medium">Comprometido (A Pagar):</span>
+                <span className="font-bold text-amber-600">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investmentCommitted)}</span>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-zinc-400 font-medium">{investmentProgress.toFixed(0)}% alcançado</span>
+              </div>
             </div>
           </div>
         </div>
