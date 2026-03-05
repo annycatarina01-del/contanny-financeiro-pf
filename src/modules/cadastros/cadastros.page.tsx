@@ -61,16 +61,17 @@ export default function CadastrosPage() {
     }
   };
 
-  const handleSave = async (data: { type: OptionType; label: string; value: string }) => {
+  const handleSave = async (data: { type: OptionType; label: string; value: string; metadata?: any }) => {
     if (!organization) return;
     try {
       if (editingOption) {
-        await CadastrosService.update(organization.id, editingOption.id, { label: data.label, value: data.value });
+        await CadastrosService.update(organization.id, editingOption.id, { label: data.label, value: data.value, metadata: data.metadata });
       } else {
-        await CadastrosService.create(organization.id, { type: data.type, label: data.label, value: data.value });
+        await CadastrosService.create(organization.id, { type: data.type, label: data.label, value: data.value, metadata: data.metadata });
       }
       setShowForm(false);
       fetchData();
+      await refreshOptions();
     } catch (error) {
       console.error(error);
       alert("Erro ao salvar opção.");

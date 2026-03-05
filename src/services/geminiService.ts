@@ -4,7 +4,7 @@ import { Transaction } from "../types";
 let ai: GoogleGenAI | null = null;
 
 function getAiClient() {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
     return null;
   }
@@ -31,7 +31,7 @@ export async function getFinancialInsights(transactions: Transaction[]) {
     }
 
     const response = await client.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.0-flash",
       contents: `Analise estas transações financeiras e forneça 3 dicas curtas e práticas em português para melhorar a saúde financeira do usuário. Seja direto e use um tom encorajador.
       
       IMPORTANTE: Sempre que citar valores monetários, formate-os estritamente como "R$ X,XX" (Real Brasileiro).
@@ -45,6 +45,12 @@ export async function getFinancialInsights(transactions: Transaction[]) {
     return response.text || "Não foi possível gerar insights no momento.";
   } catch (error) {
     console.error("Error fetching insights:", error);
-    return "Erro ao conectar com a IA para gerar insights.";
+
+    // Tratamento amigável para erro de cota
+    if (error instanceof Error && (error.message.includes('429') || error.message.includes('exceeded your current quota'))) {
+      return "O limite de uso gratuito da Inteligência Artificial foi atingido. Por favor, tente novamente mais tarde ou verifique seu plano no Google AI Studio.";
+    }
+
+    return "Erro ao conectar com a IA para gerar insights. Tente novamente mais tarde.";
   }
 }
