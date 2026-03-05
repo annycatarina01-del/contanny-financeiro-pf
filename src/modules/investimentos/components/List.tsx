@@ -55,7 +55,7 @@ export function List({ investments, onDelete, onEdit, onRedeem }: ListProps) {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-zinc-600">
-                    {format(new Date(inv.purchase_date), "dd/MM/yyyy", { locale: ptBR })}
+                    {format(new Date(inv.purchase_date + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-right text-zinc-600">
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.amount_invested)}

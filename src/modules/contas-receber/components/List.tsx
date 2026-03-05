@@ -61,7 +61,7 @@ export function List({ bills, onDelete, onToggleStatus, onEdit }: ListProps) {
             {bills.map((bill) => (
               <tr key={bill.id} className="hover:bg-zinc-50 transition-colors group">
                 <td className="px-6 py-4 text-sm text-zinc-600">
-                  {format(new Date(bill.due_date), "dd MMM, yyyy", { locale: ptBR })}
+                  {format(new Date(bill.due_date + 'T12:00:00'), "dd MMM, yyyy", { locale: ptBR })}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">

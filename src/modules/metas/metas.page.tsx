@@ -98,55 +98,77 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
 
   const expenseCategories = getOptionsByType('expense_category');
 
-  const getCategoriesByType = (type: string) => {
-    return expenseCategories
-      .filter(c => {
-        const meta = c.metadata as any;
-        return meta?.expense_type === type;
-      })
-      .map(c => c.value);
+  // Build category sets by expense_type metadata
+  // Each set includes BOTH the value AND the label so that bills stored with either string are matched correctly
+  const getCategoriesByType = (type: string): Set<string> => {
+    const set = new Set<string>();
+    expenseCategories.forEach(c => {
+      const meta = c.metadata as any;
+      if (meta?.expense_type === type) {
+        set.add(c.value);
+        if (c.label) set.add(c.label);
+      }
+    });
+    return set;
   };
 
-  const essentialCategories = getCategoriesByType('essencial');
-  const leisureCategories = getCategoriesByType('lazer');
-  const investmentCategories = getCategoriesByType('investimento');
+  const essentialCategorySet = getCategoriesByType('essencial');
+  const leisureCategorySet = getCategoriesByType('lazer');
+  const investmentCategorySet = getCategoriesByType('investimento');
 
-  // Also include the legacy hardcoded strings for backward compatibility if any old records exist
-  const legacyEssential = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'alimentacao', 'moradia', 'transporte', 'saude', 'educacao'];
-  const legacyLeisure = ['Lazer', 'Outros', 'lazer', 'outros'];
-  const legacyInvestment = ['Investimentos', 'investimentos'];
+  // Legacy hardcoded strings for backward compatibility (covers categories created before expense_type metadata was added)
+  const legacyEssentialKeywords = ['alimentação', 'moradia', 'transporte', 'saúde', 'educação', 'alimentacao', 'saude', 'casa', 'farmácia', 'farmacia', 'moto', 'utensílios', 'utensilios', 'ração', 'racao'];
+  const legacyLeisureKeywords = ['lazer', 'outros', 'entretenimento', 'lanches'];
+  const legacyInvestmentKeywords = ['investimentos', 'investimento'];
 
-  const allEssentialCategories = [...essentialCategories, ...legacyEssential];
-  const allLeisureCategories = [...leisureCategories, ...legacyLeisure];
-  const allInvestmentCategories = [...investmentCategories, ...legacyInvestment];
+  // Combine metadata-based categories with legacy keyword matching
+  const matchesCategory = (categoryValue: string | undefined | null, type: 'essencial' | 'lazer' | 'investimento'): boolean => {
+    if (!categoryValue) return false;
+    const val = categoryValue.toLowerCase();
+
+    if (type === 'essencial') {
+      if (essentialCategorySet.has(categoryValue)) return true;
+      return legacyEssentialKeywords.some(kw => val.includes(kw));
+    }
+    if (type === 'lazer') {
+      if (leisureCategorySet.has(categoryValue)) return true;
+      return legacyLeisureKeywords.some(kw => val.includes(kw));
+    }
+    if (type === 'investimento') {
+      if (investmentCategorySet.has(categoryValue)) return true;
+      return legacyInvestmentKeywords.some(kw => val.includes(kw));
+    }
+    return false;
+  };
 
   // Realized Spent (Transactions + Paid Bills)
   const essentialSpent =
-    monthTransactions.filter(t => t.type === 'expense' && allEssentialCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => allEssentialCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'essencial')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => matchesCategory(b.category, 'essencial')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const leisureSpent =
-    monthTransactions.filter(t => t.type === 'expense' && allLeisureCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => allLeisureCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'lazer')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => matchesCategory(b.category, 'lazer')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const investmentSpent =
-    monthTransactions.filter(t => t.type === 'expense' && allInvestmentCategories.includes(t.category)).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => allInvestmentCategories.includes(b.category)).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'investimento')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
+    monthBills.filter(b => matchesCategory(b.category, 'investimento')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   // Committed (Pending Bills)
   const monthPendingBills = bills.filter(b => b.status === 'pending' && b.due_date.startsWith(monthStr));
 
   const essentialCommitted = monthPendingBills
-    .filter(b => allEssentialCategories.includes(b.category))
+    .filter(b => matchesCategory(b.category, 'essencial'))
     .reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const leisureCommitted = monthPendingBills
-    .filter(b => allLeisureCategories.includes(b.category))
+    .filter(b => matchesCategory(b.category, 'lazer'))
     .reduce((acc, b) => acc + Math.abs(b.amount), 0);
 
   const investmentCommitted = monthPendingBills
-    .filter(b => allInvestmentCategories.includes(b.category))
+    .filter(b => matchesCategory(b.category, 'investimento'))
     .reduce((acc, b) => acc + Math.abs(b.amount), 0);
+
 
   return (
     <div className="space-y-8">

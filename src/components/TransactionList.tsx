@@ -44,7 +44,7 @@ export function TransactionList({ transactions, onDelete, groupBy = 'none' }: Tr
         {items.map((t) => (
           <tr key={t.id} className="hover:bg-zinc-50 transition-colors group">
             <td className="px-6 py-4 text-sm text-zinc-600">
-              {format(new Date(t.date), "dd MMM, yyyy", { locale: ptBR })}
+              {format(new Date(t.date + 'T12:00:00'), "dd MMM, yyyy", { locale: ptBR })}
             </td>
             <td className="px-6 py-4">
               <div className="flex items-center gap-3">

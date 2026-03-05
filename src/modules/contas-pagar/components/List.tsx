@@ -66,7 +66,7 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onBulkDelete,
   const getStatusInfo = (bill: BillPayable) => {
     if (bill.status === 'paid') return { label: 'Pago', color: 'bg-emerald-50 text-emerald-600 border-emerald-100', icon: <CheckCircle size={14} /> };
 
-    const date = new Date(bill.due_date);
+    const date = new Date(bill.due_date + 'T12:00:00');
     if (isPast(date) && !isToday(date)) return { label: 'Atrasado', color: 'bg-rose-50 text-rose-600 border-rose-100', icon: <AlertCircle size={14} /> };
     if (isToday(date)) return { label: 'Vence Hoje', color: 'bg-amber-50 text-amber-600 border-amber-100', icon: <Clock size={14} /> };
 
@@ -199,7 +199,7 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onBulkDelete,
                       </button>
                     </td>
                     <td className="px-6 py-4 text-sm text-zinc-600">
-                      {format(new Date(bill.due_date), "dd/MM/yyyy", { locale: ptBR })}
+                      {format(new Date(bill.due_date + 'T12:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">

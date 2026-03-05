@@ -12,14 +12,14 @@ export function Kpis({ bills }: KpisProps) {
     .reduce((acc, b) => acc + b.amount, 0);
 
   const totalOverdue = bills
-    .filter(b => b.status === 'pending' && isPast(new Date(b.due_date)) && !isToday(new Date(b.due_date)))
+    .filter(b => b.status === 'pending' && isPast(new Date(b.due_date + 'T12:00:00')) && !isToday(new Date(b.due_date + 'T12:00:00')))
     .reduce((acc, b) => acc + b.amount, 0);
 
   const totalPaid = bills
     .filter(b => b.status === 'paid')
     .reduce((acc, b) => acc + b.amount, 0);
 
-  const formatCurrency = (val: number) => 
+  const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
   return (
