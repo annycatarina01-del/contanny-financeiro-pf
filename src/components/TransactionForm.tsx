@@ -22,12 +22,12 @@ export function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
   const [months, setMonths] = useState("1");
 
   useEffect(() => {
-    if (type === 'expense' && expenseCategories.length > 0) {
+    if (type === 'expense' && expenseCategories.length > 0 && !category) {
       setCategory(expenseCategories[0].value);
-    } else if (type === 'income' && incomeCategories.length > 0) {
+    } else if (type === 'income' && incomeCategories.length > 0 && !category) {
       setCategory(incomeCategories[0].value);
     }
-  }, [type, expenseCategories, incomeCategories]);
+  }, [expenseCategories, incomeCategories]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

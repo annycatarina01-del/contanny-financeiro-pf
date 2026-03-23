@@ -127,7 +127,8 @@ export default function ContasReceberPage() {
   };
 
   const filteredBills = bills.filter(bill => {
-    const matchesDate = bill.due_date >= startDate && bill.due_date <= endDate;
+    const referenceDate = bill.status === 'received' && bill.payment_date ? bill.payment_date : bill.due_date;
+    const matchesDate = referenceDate >= startDate && referenceDate <= endDate;
     const matchesStatus = statusFilter === 'all' ? true : bill.status === statusFilter;
     const matchesCategory = categoryFilter === 'all' ? true : bill.category === categoryFilter;
     const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : bill.payment_method === paymentMethodFilter;

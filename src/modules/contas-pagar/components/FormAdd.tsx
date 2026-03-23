@@ -75,6 +75,7 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
       paymentMethod: isCreditCard ? 'credit_card' : (paymentMethod as any),
       cardProvider: isCreditCard ? cardProvider : undefined,
       investmentId: finalInvestmentId,
+      fundingSource: fundingSource,
       isRepeated,
       months: isRepeated ? parseInt(months) : 1,
       installments: parseInt(installments) > 1 ? parseInt(installments) : 1,
@@ -255,7 +256,7 @@ export function FormAdd({ onAdd, onClose }: FormAddProps) {
                 )}
               </div>
 
-              {fundingSource === 'investment' && (
+              {(fundingSource === 'investment' || fundingSource === 'investimentos') && (
                 <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
                   <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Qual Investimento?</label>
                   <select

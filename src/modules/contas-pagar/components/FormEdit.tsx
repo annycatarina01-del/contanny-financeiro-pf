@@ -34,7 +34,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
   const [investmentId, setInvestmentId] = useState(bill.investment_id || "");
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [fundingSource, setFundingSource] = useState(
-    bill.investment_id ? 'investment' : 'balance'
+    bill.funding_source || (bill.investment_id ? 'investment' : 'balance')
   );
 
   useEffect(() => {
@@ -69,6 +69,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
       paymentMethod: isCreditCard ? 'credit_card' : (paymentMethod as any),
       cardProvider: isCreditCard ? cardProvider : undefined,
       investmentId: finalInvestmentId,
+      fundingSource: fundingSource,
     });
   };
 
@@ -243,7 +244,7 @@ export function FormEdit({ bill, onUpdate, onClose }: FormEditProps) {
                 )}
               </div>
 
-              {fundingSource === 'investment' && (
+              {(fundingSource === 'investment' || fundingSource === 'investimentos') && (
                 <div className="space-y-1 animate-in slide-in-from-top-2 duration-200">
                   <label className="text-xs font-semibold text-zinc-500 uppercase ml-1">Qual Investimento?</label>
                   <select

@@ -107,12 +107,18 @@ export function List({ bills, onDelete, onToggleStatus, onBulkPay, onBulkDelete,
   };
 
   const getFundingSourceLabel = (bill: BillPayable) => {
-    if (bill.investment_id) {
-      const investmentSource = fundingSources.find(f => f.value === 'investment' || f.value === 'investimentos');
-      return investmentSource?.label || 'Investimento';
+    if (bill.funding_source) {
+      if (bill.funding_source === 'investment' || bill.funding_source === 'investimentos') {
+        return fundingSources.find(f => f.value === 'investment' || f.value === 'investimentos')?.label || 'Investimento';
+      }
+      if (bill.funding_source === 'balance' || bill.funding_source === 'saldo') {
+        return fundingSources.find(f => f.value === 'balance' || f.value === 'saldo')?.label || 'Saldo / Salário';
+      }
+      return fundingSources.find(f => f.value === bill.funding_source)?.label || bill.funding_source;
     }
-    const balanceSource = fundingSources.find(f => f.value === 'balance' || f.value === 'saldo');
-    return balanceSource?.label || 'Saldo / Salário';
+    // Fallback for old records
+    if (bill.investment_id) return fundingSources.find(f => f.value === 'investment' || f.value === 'investimentos')?.label || 'Investimento';
+    return fundingSources.find(f => f.value === 'balance' || f.value === 'saldo')?.label || 'Saldo / Salário';
   };
 
   return (

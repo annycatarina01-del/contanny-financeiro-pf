@@ -131,33 +131,36 @@ export default function MetasPage({ transactions, bills, receivables }: MetasPag
     if (!categoryValue) return false;
     const val = categoryValue.toLowerCase();
 
+    const catOption = expenseCategories.find(c => c.value === categoryValue);
+    const labelVal = catOption?.label.toLowerCase() || '';
+
     if (type === 'essencial') {
       if (essentialCategorySet.has(categoryValue)) return true;
-      return legacyEssentialKeywords.some(kw => val.includes(kw));
+      return legacyEssentialKeywords.some(kw => val.includes(kw) || labelVal.includes(kw));
     }
     if (type === 'lazer') {
       if (leisureCategorySet.has(categoryValue)) return true;
-      return legacyLeisureKeywords.some(kw => val.includes(kw));
+      return legacyLeisureKeywords.some(kw => val.includes(kw) || labelVal.includes(kw));
     }
     if (type === 'investimento') {
       if (investmentCategorySet.has(categoryValue)) return true;
-      return legacyInvestmentKeywords.some(kw => val.includes(kw));
+      return legacyInvestmentKeywords.some(kw => val.includes(kw) || labelVal.includes(kw));
     }
     return false;
   };
 
-  // Realized Spent (Transactions + Paid Bills)
-  const essentialSpent =
-    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'essencial')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => matchesCategory(b.category, 'essencial')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+  // Realized Spent (Transactions Only - covers both manual dashboard and paid bills via RPC)
+  const essentialSpent = monthTransactions
+    .filter(t => t.type === 'expense' && matchesCategory(t.category, 'essencial'))
+    .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
-  const leisureSpent =
-    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'lazer')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => matchesCategory(b.category, 'lazer')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+  const leisureSpent = monthTransactions
+    .filter(t => t.type === 'expense' && matchesCategory(t.category, 'lazer'))
+    .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
-  const investmentSpent =
-    monthTransactions.filter(t => t.type === 'expense' && matchesCategory(t.category, 'investimento')).reduce((acc, t) => acc + Math.abs(t.amount), 0) +
-    monthBills.filter(b => matchesCategory(b.category, 'investimento')).reduce((acc, b) => acc + Math.abs(b.amount), 0);
+  const investmentSpent = monthTransactions
+    .filter(t => t.type === 'expense' && matchesCategory(t.category, 'investimento'))
+    .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
   // Committed (Pending Bills)
   const monthPendingBills = bills.filter(b => b.status === 'pending' && b.due_date.startsWith(monthStr));

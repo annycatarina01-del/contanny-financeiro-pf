@@ -1,5 +1,5 @@
 export type BillStatus = 'pending' | 'paid';
-export type PaymentMethod = 'credit_card' | 'installments' | 'boleto' | 'investment' | 'investimentos';
+export type PaymentMethod = 'credit_card' | 'installments' | 'boleto' | 'investment' | 'investimentos' | string;
 
 export interface BillPayable {
   id: string;
@@ -13,6 +13,7 @@ export interface BillPayable {
   payment_method: PaymentMethod;
   card_provider?: string;
   investment_id?: string;
+  funding_source?: string;
   payment_date?: string;
   created_at: string;
   installment_number?: number;
@@ -29,6 +30,7 @@ export interface UpdateBillDTO {
   paymentMethod?: PaymentMethod;
   cardProvider?: string;
   investmentId?: string;
+  fundingSource?: string;
 }
 
 export interface CreateBillDTO {
@@ -40,9 +42,11 @@ export interface CreateBillDTO {
   paymentMethod: PaymentMethod;
   cardProvider?: string;
   investmentId?: string;
+  fundingSource?: string;
   isRepeated?: boolean;
   months?: number;
   installments?: number;
   paidInstallments?: number;
   sameDayDue?: boolean;
 }
+

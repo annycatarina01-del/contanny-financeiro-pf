@@ -51,6 +51,16 @@ export default function ContasPagarPage() {
   const getCardLabel = (value: string) =>
     creditCardOptions.find(c => c.value === value)?.label || value;
   const getFundingSourceLabel = (bill: BillPayable) => {
+    if (bill.funding_source) {
+      if (bill.funding_source === 'investment' || bill.funding_source === 'investimentos') {
+        return fundingSourceOptions.find(f => f.value === 'investment' || f.value === 'investimentos')?.label || 'Investimento';
+      }
+      if (bill.funding_source === 'balance' || bill.funding_source === 'saldo') {
+        return fundingSourceOptions.find(f => f.value === 'balance' || f.value === 'saldo')?.label || 'Saldo / Salário';
+      }
+      return fundingSourceOptions.find(f => f.value === bill.funding_source)?.label || bill.funding_source;
+    }
+    // Fallback for old records
     if (bill.investment_id) return fundingSourceOptions.find(f => f.value === 'investment' || f.value === 'investimentos')?.label || 'Investimento';
     return fundingSourceOptions.find(f => f.value === 'balance' || f.value === 'saldo')?.label || 'Saldo / Salário';
   };
@@ -177,10 +187,13 @@ export default function ContasPagarPage() {
   };
 
   const filteredBills = bills.filter(bill => {
-    const matchesDate = bill.due_date >= startDate && bill.due_date <= endDate;
+    const referenceDate = bill.status === 'paid' && bill.payment_date ? bill.payment_date : bill.due_date;
+    const matchesDate = referenceDate >= startDate && referenceDate <= endDate;
     const matchesStatus = statusFilter === 'all' ? true : bill.status === statusFilter;
     const matchesCategory = categoryFilter === 'all' ? true : bill.category === categoryFilter;
-    const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : bill.payment_method === paymentMethodFilter;
+    const isCreditCardFilter = paymentMethodFilter === 'credit_card' || paymentMethodFilter === 'cart_o_de_cr_dito';
+    const effectivePaymentMethodFilter = isCreditCardFilter ? 'credit_card' : paymentMethodFilter;
+    const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : bill.payment_method === effectivePaymentMethodFilter;
 
     let matchesCardProvider = true;
     if (cardProviderFilter !== 'all') {
@@ -189,10 +202,12 @@ export default function ContasPagarPage() {
 
     let matchesFundingSource = true;
     if (fundingSourceFilter !== 'all') {
-      if (fundingSourceFilter === 'investment') {
-        matchesFundingSource = !!bill.investment_id;
-      } else if (fundingSourceFilter === 'balance') {
-        matchesFundingSource = !bill.investment_id;
+      if (fundingSourceFilter === 'investment' || fundingSourceFilter === 'investimentos') {
+        matchesFundingSource = bill.funding_source === fundingSourceFilter || !!bill.investment_id;
+      } else if (fundingSourceFilter === 'balance' || fundingSourceFilter === 'saldo') {
+        matchesFundingSource = bill.funding_source === fundingSourceFilter || (!bill.investment_id && !bill.funding_source) || bill.funding_source === 'balance' || bill.funding_source === 'saldo';
+      } else {
+        matchesFundingSource = bill.funding_source === fundingSourceFilter;
       }
     }
 
@@ -334,7 +349,8 @@ export default function ContasPagarPage() {
               onCategoryFilterChange={setCategoryFilter}
               onPaymentMethodFilterChange={(method) => {
                 setPaymentMethodFilter(method as 'all' | PaymentMethod);
-                if (method !== 'credit_card') {
+                const isCreditCard = method === 'credit_card' || method === 'cart_o_de_cr_dito';
+                if (!isCreditCard) {
                   setCardProviderFilter('all');
                 }
               }}

@@ -65,6 +65,7 @@ export const ContasPagarService = {
           payment_method: data.paymentMethod,
           card_provider: data.cardProvider,
           investment_id: data.investmentId,
+          funding_source: data.fundingSource,
           installment_number: installments > 1 ? i : undefined,
           total_installments: installments > 1 ? installments : undefined,
           secondary_description: data.secondaryDescription,
@@ -101,6 +102,7 @@ export const ContasPagarService = {
           payment_method: data.paymentMethod,
           card_provider: data.cardProvider,
           investment_id: data.investmentId,
+          funding_source: data.fundingSource,
           secondary_description: data.secondaryDescription,
         })
         .eq("id", id)

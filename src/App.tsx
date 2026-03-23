@@ -88,7 +88,7 @@ export default function App() {
     if (organization) {
       fetchData();
     }
-  }, [organization]);
+  }, [organization, activeTab]);
 
   const handleAddTransaction = async (data: any) => {
     if (!organization || accounts.length === 0) return;
