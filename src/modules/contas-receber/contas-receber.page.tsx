@@ -6,10 +6,10 @@ import { FormAdd } from "./components/FormAdd";
 import { FormEdit } from "./components/FormEdit";
 import { Kpis } from "./components/Kpis";
 import { Filters } from "./components/Filters";
-import { Plus, X, Calendar, Filter, CalendarSearch, FileDown } from "lucide-react";
+import { Plus, X, Calendar, Filter, CalendarSearch, FileDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { exportContasReceberToPDF } from "../../lib/pdfExport";
 import { motion, AnimatePresence } from "motion/react";
-import { startOfMonth, endOfMonth, format, addMonths, isSameMonth, isSameYear } from "date-fns";
+import { startOfMonth, endOfMonth, format, addMonths, subMonths, isSameMonth, isSameYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -36,6 +36,22 @@ export default function ContasReceberPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'received' | 'pending'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | PaymentMethod>('all');
+
+  const handlePrevMonth = () => {
+    const currentStart = new Date(startDate + 'T12:00:00');
+    const newStart = startOfMonth(subMonths(currentStart, 1));
+    const newEnd = endOfMonth(subMonths(currentStart, 1));
+    setStartDate(format(newStart, 'yyyy-MM-dd'));
+    setEndDate(format(newEnd, 'yyyy-MM-dd'));
+  };
+
+  const handleNextMonth = () => {
+    const currentStart = new Date(startDate + 'T12:00:00');
+    const newStart = startOfMonth(addMonths(currentStart, 1));
+    const newEnd = endOfMonth(addMonths(currentStart, 1));
+    setStartDate(format(newStart, 'yyyy-MM-dd'));
+    setEndDate(format(newEnd, 'yyyy-MM-dd'));
+  };
 
   const fetchBillsAndAccounts = async () => {
     if (!organization) {
@@ -189,27 +205,18 @@ export default function ContasReceberPage() {
       </div>
 
       {/* Period Context Card */}
-      <div className="bg-white px-6 py-4 rounded-3xl border border-zinc-200 shadow-sm flex items-center justify-between group">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-2xl flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white transition-all duration-300">
-            <Calendar size={24} />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Período Visualizado</p>
-            <h3 className="text-xl font-bold text-zinc-900 capitalize">
-              {getPeriodLabel(startDate, endDate)}
-            </h3>
-          </div>
-        </div>
-        {!showFilters && (
-          <button
-            onClick={() => setShowFilters(true)}
-            className="text-xs font-bold text-zinc-900 hover:text-zinc-600 transition-colors flex items-center gap-1.5"
-          >
-            <CalendarSearch size={14} />
-            Alterar Período
+      <div className="flex justify-start">
+        <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-2xl border border-zinc-200 shadow-sm">
+          <button onClick={handlePrevMonth} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-500">
+            <ChevronLeft size={20} />
           </button>
-        )}
+          <span className="font-bold text-zinc-900 min-w-[120px] text-center capitalize">
+            {getPeriodLabel(startDate, endDate)}
+          </span>
+          <button onClick={handleNextMonth} className="p-2 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-500">
+            <ChevronRight size={20} />
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
