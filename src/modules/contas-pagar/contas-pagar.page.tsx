@@ -207,9 +207,26 @@ export default function ContasPagarPage() {
     const matchesDate = referenceDate >= startDate && referenceDate <= endDate;
     const matchesStatus = statusFilter === 'all' ? true : bill.status === statusFilter;
     const matchesCategory = categoryFilter === 'all' ? true : bill.category === categoryFilter;
-    const isCreditCardFilter = paymentMethodFilter === 'credit_card' || paymentMethodFilter === 'cart_o_de_cr_dito';
+    
+    // Check if the current filter is for credit card
+    const paymentFilterLower = paymentMethodFilter && typeof paymentMethodFilter === 'string' ? paymentMethodFilter.toLowerCase() : '';
+    const isCreditCardFilter = paymentMethodFilter === 'credit_card' || 
+                               paymentMethodFilter === 'cart_o_de_cr_dito' ||
+                               paymentFilterLower === 'cartão de crédito' ||
+                               paymentFilterLower === 'cartao de credito';
+                               
     const effectivePaymentMethodFilter = isCreditCardFilter ? 'credit_card' : paymentMethodFilter;
-    const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : bill.payment_method === effectivePaymentMethodFilter;
+    
+    // Match logic resilient to data inconsistencies
+    const matchedMethodStr = bill.payment_method && typeof bill.payment_method === 'string' ? bill.payment_method.toLowerCase() : '';
+    const matchesPaymentMethod = paymentMethodFilter === 'all' ? true : (
+      bill.payment_method === effectivePaymentMethodFilter ||
+      (isCreditCardFilter && (
+        bill.payment_method === 'cart_o_de_cr_dito' ||
+        matchedMethodStr === 'cartão de crédito' ||
+        matchedMethodStr === 'cartao de credito'
+      ))
+    );
 
     let matchesCardProvider = true;
     if (cardProviderFilter !== 'all') {
