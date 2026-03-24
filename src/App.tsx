@@ -226,17 +226,24 @@ export default function App() {
 
   const summary: Summary = filteredTransactions.reduce((acc, t) => {
     const isPending = t.status === 'pending';
+    const amount = Math.abs(Number(t.amount));
 
     if (t.type === 'income') {
-      acc.projectedIncome += t.amount;
-      if (!isPending) acc.realizedIncome += t.amount;
+      if (isPending) {
+        acc.projectedIncome += amount;
+      } else {
+        acc.realizedIncome += amount;
+      }
     } else {
-      acc.projectedExpenses += t.amount;
-      if (!isPending) acc.realizedExpenses += t.amount;
+      if (isPending) {
+        acc.projectedExpenses += amount;
+      } else {
+        acc.realizedExpenses += amount;
+      }
     }
 
     acc.realizedBalance = acc.realizedIncome - acc.realizedExpenses;
-    acc.projectedBalance = acc.projectedIncome - acc.projectedExpenses;
+    acc.projectedBalance = acc.realizedBalance + acc.projectedIncome - acc.projectedExpenses;
 
     return acc;
   }, {
